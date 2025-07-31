@@ -9,7 +9,7 @@ struct ContentView: View {
         darkMode ? borderColorDark : borderColorLight
     }
     let maxPanelWidthPercentage: CGFloat = 0.45
-    let borderSize: CGFloat = 14
+    let borderSize: CGFloat = 8
     let headerSize: CGFloat = 0
     
     @State private var leftInset: CGFloat = 0
