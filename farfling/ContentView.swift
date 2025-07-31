@@ -123,7 +123,8 @@ struct ContentView: View {
             }
             .offset(y: showBottomDrawer ? 0 : 100)
             .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 15)
+            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - bottomInset - 50)
+            .animation(.easeInOut(duration: 0.3), value: bottomInset)
             .gesture(
                 DragGesture()
                     .onChanged { value in
