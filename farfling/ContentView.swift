@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import UIKit
 
 struct ContentView: View {
     let darkMode: Bool = true
@@ -63,20 +64,6 @@ struct ContentView: View {
                 showBottomDrawer = true
             }
         }
-//        .onMapCameraChange { context in
-//            if context?.reason != MapCameraChangeContext.Reason.programmatic {
-//                isMapMoving = true
-//                withAnimation(.easeInOut(duration: 0.3)) {
-//                    showBottomDrawer = false
-//                }
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-//                    isMapMoving = false
-//                    withAnimation(.easeInOut(duration: 0.3)) {
-//                        showBottomDrawer = true
-//                    }
-//                }
-//            }
-//        }
         .ignoresSafeArea()
         .padding(.horizontal, borderSize)
     }
@@ -92,21 +79,13 @@ struct ContentView: View {
                 height: height - borderSize * 2 - headerSize
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
-
-            Canvas { context, size in
-                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
-                context.blendMode = .destinationOut
-                context.fill(holePath, with: .color(.black))
-            }
-            .compositingGroup()
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
             
             ZStack {
                 HStack {
                     Spacer()
                     Button(action: {
                         // Handle login action
+                        triggerHaptic()
                     }) {
                         Text("Log in")
                             .font(.system(size: 16, weight: .semibold))
@@ -128,7 +107,16 @@ struct ContentView: View {
             .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
             .padding(.top, 60)
+            
 
+            Rectangle()
+                .fill(Color(hex: "#C19A6B"))
+                .frame(height: 100)
+                .frame(maxWidth: .infinity)
+                .offset(y: showBottomDrawer ? 0 : 100)
+                .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
+                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 15)
+            
             Button(action: {
                 withAnimation {
                     leftInset = geometry.size.width * maxPanelWidthPercentage
@@ -181,6 +169,15 @@ struct ContentView: View {
             }
             .position(x: geometry.size.width - 60, y: geometry.size.height - 65)
 
+            Canvas { context, size in
+                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
+                context.blendMode = .destinationOut
+                context.fill(holePath, with: .color(.black))
+            }
+            .compositingGroup()
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+
             Rectangle()
                 .fill(Color.clear)
                 .frame(width: hitAreaWidth + leftInset)
@@ -200,6 +197,9 @@ struct ContentView: View {
                                 let closest = thresholds.min(by: { abs(leftInset - geometry.size.width * $0) < abs(leftInset - geometry.size.width * $1) }) ?? 0
                                 leftInset = geometry.size.width * closest
                                 startLeftInset = 0 // reset after snap
+                                if closest == 0 || closest == maxPanelWidthPercentage {
+                                    triggerHaptic()
+                                }
                             }
                         }
                 )
@@ -227,19 +227,15 @@ struct ContentView: View {
                                 }) ?? 0
                                 rightInset = geometry.size.width * closest
                                 startRightInset = 0
+                                if closest == 0 || closest == maxPanelWidthPercentage {
+                                    triggerHaptic()
+                                }
                             }
                         }
                 )
                 .frame(maxHeight: .infinity)
                 .position(x: geometry.size.width, y: geometry.size.height / 2)
             
-            Rectangle()
-                .fill(Color(hex: "#D2B48C")) // tan color
-                .frame(height: 30)
-                .frame(maxWidth: .infinity)
-                .offset(y: showBottomDrawer ? 0 : 40)
-                .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 15)
         }
         .ignoresSafeArea()
     }
@@ -263,5 +259,13 @@ extension Color {
         let b = Double(rgb & 0xFF) / 255
         
         self.init(red: r, green: g, blue: b)
+    }
+}
+
+extension ContentView {
+    func triggerHaptic() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.prepare()
+        generator.impactOccurred()
     }
 }
