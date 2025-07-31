@@ -55,6 +55,7 @@ struct ContentView: View {
             }
             .compositingGroup()
             .ignoresSafeArea()
+            .allowsHitTesting(false)
             
             ZStack {
                 HStack {
@@ -126,7 +127,6 @@ struct ContentView: View {
                 .frame(maxHeight: .infinity)
                 .position(x: geometry.size.width, y: geometry.size.height / 2)
         }
-        .ignoresSafeArea()
     }
 }
 
