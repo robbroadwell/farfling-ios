@@ -114,7 +114,7 @@ struct ContentView: View {
             ZStack(alignment: .top) {
                 Rectangle()
                     .fill(Color(hex: "#C19A6B"))
-                    .frame(height: 100)
+                    .frame(height: geometry.size.height * 1.5)
                     .frame(maxWidth: .infinity)
                 Capsule()
                     .fill(Color.white)
@@ -123,7 +123,7 @@ struct ContentView: View {
             }
             .offset(y: showBottomDrawer ? 0 : 100)
             .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - bottomInset - 50)
+            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
             .animation(.easeInOut(duration: 0.3), value: bottomInset)
             .gesture(
                 DragGesture()
