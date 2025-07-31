@@ -13,6 +13,8 @@ struct ContentView: View {
     
     @State private var leftInset: CGFloat = 0
     @State private var startLeftInset: CGFloat = 0
+    @State private var rightInset: CGFloat = 0
+    @State private var startRightInset: CGFloat = 0
     
     var body: some View {
         ZStack {
@@ -40,7 +42,7 @@ struct ContentView: View {
             let holeRect = CGRect(
                 x: borderSize + leftInset,
                 y: borderSize + headerSize,
-                width: width - borderSize * 2 - leftInset,
+                width: width - borderSize * 2 - leftInset - rightInset,
                 height: height - borderSize * 2 - headerSize
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
@@ -77,6 +79,33 @@ struct ContentView: View {
                 )
                 .frame(maxHeight: .infinity)
                 .position(x: 0, y: geometry.size.height / 2)
+            
+            Rectangle()
+                .fill(Color.red)
+                .frame(width: 24 + rightInset)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            if value.translation == .zero {
+                                startRightInset = rightInset
+                            }
+                            let proposed = max(0, min(geometry.size.width * 0.75, startRightInset - value.translation.width))
+                            rightInset = proposed
+                        }
+                        .onEnded { value in
+                            withAnimation {
+                                let thresholds: [CGFloat] = [0, 0.25, 0.5, 0.75]
+                                let closest = thresholds.min(by: {
+                                    abs(rightInset - geometry.size.width * $0) < abs(rightInset - geometry.size.width * $1)
+                                }) ?? 0
+                                rightInset = geometry.size.width * closest
+                                startRightInset = 0
+                            }
+                        }
+                )
+                .frame(maxHeight: .infinity)
+                .position(x: geometry.size.width, y: geometry.size.height / 2)
         }
         .ignoresSafeArea()
     }
