@@ -2,122 +2,53 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
+    let borderSize: CGFloat = 30
     var body: some View {
-        DrawerMapView()
-    }
-}
+        ZStack {
+            Color(hex: "#153968")
+                .ignoresSafeArea()
 
+            GeometryReader { geometry in
+                let width = geometry.size.width
+                let height = geometry.size.height
+                let holeRect = CGRect(
+                    x: borderSize,
+                    y: borderSize,
+                    width: width - borderSize * 2,
+                    height: height - borderSize * 2
+                )
+                let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
 
-struct DrawerMapView: View {
-    @State private var topOffset: CGFloat = 0
-    @State private var bottomOffset: CGFloat = 0
-    @State private var leftOffset: CGFloat = 0
-    @State private var rightOffset: CGFloat = 0
-
-    private let maxDrawerSize: CGFloat = 300
-    private let minDrawerSize: CGFloat = 10
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white)
-                    .padding(.top, topOffset)
-                    .padding(.bottom, bottomOffset + 40)
-                    .padding(.leading, leftOffset + 40)
-                    .padding(.trailing, rightOffset + 40)
-                    .overlay(
-                        Map(coordinateRegion: .constant(MKCoordinateRegion(
-                            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-                            span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50)
-                        )))
-                        .clipShape(RoundedRectangle(cornerRadius: 47.28))
-                    )
-                    .animation(
-                        .spring(),
-                        value: [
-                            topOffset,
-                            bottomOffset,
-                            leftOffset,
-                            rightOffset
-                        ]
-                    )
-
-                // Top Drawer
-                VStack {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.95))
-                        .frame(height: topOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    let newHeight = min(max(value.translation.height, 0), maxDrawerSize)
-                                    topOffset = newHeight
-                                }
-                        )
-                        .background(Color.white)
-                    Spacer()
+                Canvas { context, size in
+                    context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color.white.opacity(0.6)))
+                    context.blendMode = .destinationOut
+                    context.fill(holePath, with: .color(.black))
                 }
-
-                // Bottom Drawer
-                VStack {
-                    Spacer()
-                    Rectangle()
-                        .fill(Color.white.opacity(0.95))
-                        .frame(height: bottomOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    let newHeight = min(max(-value.translation.height, 0), maxDrawerSize)
-                                    bottomOffset = newHeight
-                                }
-                        )
-                        .background(Color.white)
-                }
-
-                // Left Drawer
-                HStack {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.95))
-                        .frame(width: leftOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    let newWidth = min(max(value.translation.width, 0), maxDrawerSize)
-                                    leftOffset = newWidth
-                                }
-                        )
-                        .background(Color.white)
-                    Spacer()
-                }
-
-                // Right Drawer
-                HStack {
-                    Spacer()
-                    Rectangle()
-                        .fill(Color.white.opacity(0.95))
-                        .frame(width: rightOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    let newWidth = min(max(-value.translation.width, 0), maxDrawerSize)
-                                    rightOffset = newWidth
-                                }
-                        )
-                        .background(Color.white)
-                }
+                .compositingGroup()
+                .ignoresSafeArea()
             }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 47.28))
-            .compositingGroup()
-            .shadow(radius: 4)
+            .ignoresSafeArea()
         }
-        .padding(.vertical, 14)
-        .ignoresSafeArea()
-        .padding(.horizontal, 12)
     }
 }
 
 #Preview {
     ContentView()
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        let scanner = Scanner(string: hex)
+        _ = scanner.scanString("#")
+        
+        var rgb: UInt64 = 0
+        scanner.scanHexInt64(&rgb)
+        
+        let r = Double((rgb >> 16) & 0xFF) / 255
+        let g = Double((rgb >> 8) & 0xFF) / 255
+        let b = Double(rgb & 0xFF) / 255
+        
+        self.init(red: r, green: g, blue: b)
+    }
 }
