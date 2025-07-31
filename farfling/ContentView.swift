@@ -26,6 +26,8 @@ struct ContentView: View {
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50)
     ))
+    @State private var bottomInset: CGFloat = 0
+    @State private var startBottomInset: CGFloat = 0
     
     var body: some View {
         ZStack {
@@ -126,10 +128,23 @@ struct ContentView: View {
                 DragGesture()
                     .onChanged { value in
                         if value.translation == .zero {
-                            startLeftInset = leftInset
+                            startBottomInset = bottomInset
                         }
-                        let proposed = max(0, min(geometry.size.width * 0.5, startLeftInset + value.translation.width))
-                        leftInset = proposed
+                        let proposed = max(0, min(geometry.size.height * 0.5, startBottomInset - value.translation.height))
+                        bottomInset = proposed
+                    }
+                    .onEnded { value in
+                        withAnimation {
+                            let thresholds: [CGFloat] = [0, geometry.size.height * 0.5]
+                            let closest = thresholds.min(by: {
+                                abs(bottomInset - $0) < abs(bottomInset - $1)
+                            }) ?? 0
+                            bottomInset = closest
+                            startBottomInset = 0
+                            if closest == 0 || closest == geometry.size.height * 0.5 {
+                                triggerHaptic()
+                            }
+                        }
                     }
                 )
             
