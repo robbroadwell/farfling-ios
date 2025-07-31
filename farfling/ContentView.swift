@@ -10,6 +10,7 @@ struct ContentView: View {
     }
     let borderSize: CGFloat = 14
     let headerSize: CGFloat = 80
+    @State private var leftInset: CGFloat = 0
     var body: some View {
         ZStack {
             map
@@ -33,9 +34,9 @@ struct ContentView: View {
             let width = geometry.size.width
             let height = geometry.size.height
             let holeRect = CGRect(
-                x: borderSize,
+                x: borderSize + leftInset,
                 y: borderSize + headerSize,
-                width: width - borderSize * 2,
+                width: width - borderSize * 2 - leftInset,
                 height: height - borderSize * 2 - headerSize
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
@@ -47,6 +48,29 @@ struct ContentView: View {
             }
             .compositingGroup()
             .ignoresSafeArea()
+            
+            Rectangle()
+                .fill(Color.clear)
+                .frame(width: 30)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            let proposedInset = min(max(0, value.translation.width), geometry.size.width * 0.75)
+                            leftInset = proposedInset
+                        }
+                        .onEnded { value in
+                            withAnimation {
+                                if value.translation.width > geometry.size.width * 0.125 {
+                                    leftInset = geometry.size.width * 0.25
+                                } else {
+                                    leftInset = 0
+                                }
+                            }
+                        }
+                )
+                .frame(maxHeight: .infinity)
+                .position(x: 15, y: geometry.size.height / 2)
         }
         .ignoresSafeArea()
     }
