@@ -97,7 +97,7 @@ struct ContentView: View {
                     }
                 }
                 .padding(.trailing, 30)
-
+                
                 Image("Logo")
                     .resizable()
                     .scaledToFit()
@@ -108,14 +108,30 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, alignment: .top)
             .padding(.top, 60)
             
-
-            Rectangle()
-                .fill(Color(hex: "#C19A6B"))
-                .frame(height: 100)
-                .frame(maxWidth: .infinity)
-                .offset(y: showBottomDrawer ? 0 : 100)
-                .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 15)
+            
+            ZStack(alignment: .top) {
+                Rectangle()
+                    .fill(Color(hex: "#C19A6B"))
+                    .frame(height: 100)
+                    .frame(maxWidth: .infinity)
+                Capsule()
+                    .fill(Color.white)
+                    .frame(width: 40, height: 6)
+                    .padding(.top, 8)
+            }
+            .offset(y: showBottomDrawer ? 0 : 100)
+            .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
+            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 15)
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        if value.translation == .zero {
+                            startLeftInset = leftInset
+                        }
+                        let proposed = max(0, min(geometry.size.width * 0.5, startLeftInset + value.translation.width))
+                        leftInset = proposed
+                    }
+                )
             
             Button(action: {
                 withAnimation {
