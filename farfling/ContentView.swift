@@ -18,6 +18,13 @@ struct ContentView: View {
     @State private var startLeftInset: CGFloat = 0
     @State private var rightInset: CGFloat = 0
     @State private var startRightInset: CGFloat = 0
+    @State private var animatePulse = false
+    @State private var isMapMoving = false
+    @State private var showBottomDrawer = true
+    @State private var mapPosition: MapCameraPosition = .region(MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50)
+    ))
     
     var body: some View {
         ZStack {
@@ -26,14 +33,50 @@ struct ContentView: View {
         }
     }
     
-    
     var map: some View {
-        Map(initialPosition: .region(MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-            span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50)
-        ))) {
-            UserAnnotation()
+        Map(position: $mapPosition) {
+            Annotation("UserLocation", coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)) {
+                ZStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.3))
+                        .frame(width: 40, height: 40)
+                        .scaleEffect(animatePulse ? 1.4 : 1)
+                        .animation(Animation.easeOut(duration: 1).repeatForever(autoreverses: true), value: animatePulse)
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 15, height: 15)
+                }
+                .onAppear {
+                    animatePulse = true
+                }
+            }
         }
+        .onMapCameraChange(frequency: .continuous) {
+            isMapMoving = true
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showBottomDrawer = false
+            }
+        }
+        .onMapCameraChange(frequency: .onEnd) {
+            isMapMoving = false
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showBottomDrawer = true
+            }
+        }
+//        .onMapCameraChange { context in
+//            if context?.reason != MapCameraChangeContext.Reason.programmatic {
+//                isMapMoving = true
+//                withAnimation(.easeInOut(duration: 0.3)) {
+//                    showBottomDrawer = false
+//                }
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+//                    isMapMoving = false
+//                    withAnimation(.easeInOut(duration: 0.3)) {
+//                        showBottomDrawer = true
+//                    }
+//                }
+//            }
+//        }
         .ignoresSafeArea()
         .padding(.horizontal, borderSize)
     }
@@ -74,12 +117,13 @@ struct ContentView: View {
                             .clipShape(Capsule())
                     }
                 }
-                .padding(.trailing, 20)
+                .padding(.trailing, 30)
 
                 Image("Logo")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 130)
+                    .frame(height: 140)
+                    .padding(.top, 5)
             }
             .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
@@ -91,7 +135,7 @@ struct ContentView: View {
                 }
             }) {
                 ZStack(alignment: .topTrailing) {
-                    Image(systemName: "line.3.horizontal.decrease.circle")
+                    Image(systemName: "figure.run")
                         .resizable()
                         .frame(width: 25, height: 25)
                         .foregroundColor(.black)
@@ -117,7 +161,7 @@ struct ContentView: View {
                 }
             }) {
                 ZStack(alignment: .topTrailing) {
-                    Image(systemName: "person.circle")
+                    Image(systemName: "line.3.horizontal.decrease.circle")
                         .resizable()
                         .frame(width: 25, height: 25)
                         .foregroundColor(.black)
@@ -188,6 +232,14 @@ struct ContentView: View {
                 )
                 .frame(maxHeight: .infinity)
                 .position(x: geometry.size.width, y: geometry.size.height / 2)
+            
+            Rectangle()
+                .fill(Color(hex: "#D2B48C")) // tan color
+                .frame(height: 30)
+                .frame(maxWidth: .infinity)
+                .offset(y: showBottomDrawer ? 0 : 40)
+                .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
+                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 15)
         }
         .ignoresSafeArea()
     }
