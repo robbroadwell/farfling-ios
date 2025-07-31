@@ -54,13 +54,13 @@ struct ContentView: View {
             .ignoresSafeArea()
 
             Rectangle()
-                .fill(Color.clear)
-                .frame(width: 30)
+                .fill(Color.red)
+                .frame(width: 24 + leftInset)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture()
                         .onChanged { value in
-                            if startLeftInset == 0 {
+                            if value.translation == .zero {
                                 startLeftInset = leftInset
                             }
                             let proposed = max(0, min(geometry.size.width * 0.75, startLeftInset + value.translation.width))
@@ -76,7 +76,7 @@ struct ContentView: View {
                         }
                 )
                 .frame(maxHeight: .infinity)
-                .position(x: 15, y: geometry.size.height / 2)
+                .position(x: 0, y: geometry.size.height / 2)
         }
         .ignoresSafeArea()
     }
