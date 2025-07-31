@@ -2,14 +2,15 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
-    let darkMode: Bool = false
+    let darkMode: Bool = true
     let borderColorDark: Color = Color(hex: "#000000")
     let borderColorLight: Color = Color(hex: "#FFFFFF")
     var borderColor: Color {
         darkMode ? borderColorDark : borderColorLight
     }
-    let borderSize: CGFloat = 12
-    let headerSize: CGFloat = 80
+    let maxPanelWidthPercentage: CGFloat = 0.45
+    let borderSize: CGFloat = 14
+    let headerSize: CGFloat = 0
     
     @State private var leftInset: CGFloat = 0
     @State private var startLeftInset: CGFloat = 0
@@ -54,10 +55,28 @@ struct ContentView: View {
             }
             .compositingGroup()
             .ignoresSafeArea()
+            
+            ZStack {
+                HStack {
+                    
+                    Spacer()
+
+                    Text("Farfling")
+                        .font(.headline)
+                        .bold()
+
+                    Spacer()
+
+                }
+                .frame(height: headerSize)
+                
+            }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, 30)
 
             Rectangle()
-                .fill(Color.red)
-                .frame(width: 24 + leftInset)
+                .fill(Color.clear)
+                .frame(width: 28 + leftInset)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture()
@@ -65,12 +84,12 @@ struct ContentView: View {
                             if value.translation == .zero {
                                 startLeftInset = leftInset
                             }
-                            let proposed = max(0, min(geometry.size.width * 0.75, startLeftInset + value.translation.width))
+                            let proposed = max(0, min(geometry.size.width * 0.5, startLeftInset + value.translation.width))
                             leftInset = proposed
                         }
                         .onEnded { value in
                             withAnimation {
-                                let thresholds: [CGFloat] = [0, 0.25, 0.5, 0.75]
+                                let thresholds: [CGFloat] = [0, maxPanelWidthPercentage]
                                 let closest = thresholds.min(by: { abs(leftInset - geometry.size.width * $0) < abs(leftInset - geometry.size.width * $1) }) ?? 0
                                 leftInset = geometry.size.width * closest
                                 startLeftInset = 0 // reset after snap
@@ -81,8 +100,8 @@ struct ContentView: View {
                 .position(x: 0, y: geometry.size.height / 2)
             
             Rectangle()
-                .fill(Color.red)
-                .frame(width: 24 + rightInset)
+                .fill(Color.clear)
+                .frame(width: 28 + rightInset)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture()
@@ -90,12 +109,12 @@ struct ContentView: View {
                             if value.translation == .zero {
                                 startRightInset = rightInset
                             }
-                            let proposed = max(0, min(geometry.size.width * 0.75, startRightInset - value.translation.width))
+                            let proposed = max(0, min(geometry.size.width * 0.5, startRightInset - value.translation.width))
                             rightInset = proposed
                         }
                         .onEnded { value in
                             withAnimation {
-                                let thresholds: [CGFloat] = [0, 0.25, 0.5, 0.75]
+                                let thresholds: [CGFloat] = [0, maxPanelWidthPercentage]
                                 let closest = thresholds.min(by: {
                                     abs(rightInset - geometry.size.width * $0) < abs(rightInset - geometry.size.width * $1)
                                 }) ?? 0
