@@ -2,33 +2,53 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
-    let borderSize: CGFloat = 30
+    let darkMode: Bool = false
+    let borderColorDark: Color = Color(hex: "#000000")
+    let borderColorLight: Color = Color(hex: "#FFFFFF")
+    var borderColor: Color {
+        darkMode ? borderColorDark : borderColorLight
+    }
+    let borderSize: CGFloat = 14
+    let headerSize: CGFloat = 80
     var body: some View {
         ZStack {
-            Color(hex: "#153968")
-                .ignoresSafeArea()
-
-            GeometryReader { geometry in
-                let width = geometry.size.width
-                let height = geometry.size.height
-                let holeRect = CGRect(
-                    x: borderSize,
-                    y: borderSize,
-                    width: width - borderSize * 2,
-                    height: height - borderSize * 2
-                )
-                let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
-
-                Canvas { context, size in
-                    context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color.white.opacity(0.6)))
-                    context.blendMode = .destinationOut
-                    context.fill(holePath, with: .color(.black))
-                }
-                .compositingGroup()
-                .ignoresSafeArea()
+            map
+            overlay
+        }
+    }
+    
+    var map: some View {
+        Map(initialPosition: .region(MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+            span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50)
+        ))) {
+            UserAnnotation()
+        }
+        .ignoresSafeArea()
+        .padding(.horizontal, borderSize)
+    }
+    
+    var overlay: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let holeRect = CGRect(
+                x: borderSize,
+                y: borderSize + headerSize,
+                width: width - borderSize * 2,
+                height: height - borderSize * 2 - headerSize
+            )
+            let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
+            
+            Canvas { context, size in
+                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
+                context.blendMode = .destinationOut
+                context.fill(holePath, with: .color(.black))
             }
+            .compositingGroup()
             .ignoresSafeArea()
         }
+        .ignoresSafeArea()
     }
 }
 
