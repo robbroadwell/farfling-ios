@@ -8,15 +8,19 @@ struct ContentView: View {
     var borderColor: Color {
         darkMode ? borderColorDark : borderColorLight
     }
-    let borderSize: CGFloat = 14
+    let borderSize: CGFloat = 12
     let headerSize: CGFloat = 80
+    
     @State private var leftInset: CGFloat = 0
+    @State private var startLeftInset: CGFloat = 0
+    
     var body: some View {
         ZStack {
             map
             overlay
         }
     }
+    
     
     var map: some View {
         Map(initialPosition: .region(MKCoordinateRegion(
@@ -40,7 +44,7 @@ struct ContentView: View {
                 height: height - borderSize * 2 - headerSize
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
-            
+
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
                 context.blendMode = .destinationOut
@@ -48,7 +52,7 @@ struct ContentView: View {
             }
             .compositingGroup()
             .ignoresSafeArea()
-            
+
             Rectangle()
                 .fill(Color.clear)
                 .frame(width: 30)
@@ -56,16 +60,18 @@ struct ContentView: View {
                 .gesture(
                     DragGesture()
                         .onChanged { value in
-                            let proposedInset = min(max(0, value.translation.width), geometry.size.width * 0.75)
-                            leftInset = proposedInset
+                            if startLeftInset == 0 {
+                                startLeftInset = leftInset
+                            }
+                            let proposed = max(0, min(geometry.size.width * 0.75, startLeftInset + value.translation.width))
+                            leftInset = proposed
                         }
                         .onEnded { value in
                             withAnimation {
-                                if value.translation.width > geometry.size.width * 0.125 {
-                                    leftInset = geometry.size.width * 0.25
-                                } else {
-                                    leftInset = 0
-                                }
+                                let thresholds: [CGFloat] = [0, 0.25, 0.5, 0.75]
+                                let closest = thresholds.min(by: { abs(leftInset - geometry.size.width * $0) < abs(leftInset - geometry.size.width * $1) }) ?? 0
+                                leftInset = geometry.size.width * closest
+                                startLeftInset = 0 // reset after snap
                             }
                         }
                 )
