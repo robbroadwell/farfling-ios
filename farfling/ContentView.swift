@@ -8,6 +8,8 @@ struct ContentView: View {
     var borderColor: Color {
         darkMode ? borderColorDark : borderColorLight
     }
+    
+    let hitAreaWidth: CGFloat = 40
     let maxPanelWidthPercentage: CGFloat = 0.45
     let borderSize: CGFloat = 8
     let headerSize: CGFloat = 0
@@ -59,25 +61,85 @@ struct ContentView: View {
             
             ZStack {
                 HStack {
-                    
                     Spacer()
-
-                    Text("Farfling")
-                        .font(.headline)
-                        .bold()
-
-                    Spacer()
-
+                    Button(action: {
+                        // Handle login action
+                    }) {
+                        Text("Log in")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(hex: "#1A2D51")) // Dark blue text
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                            .background(Color(hex: "#FAF6EB")) // Off-white background
+                            .clipShape(Capsule())
+                    }
                 }
-                .frame(height: headerSize)
-                
+                .padding(.trailing, 20)
+
+                Image("Logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 130)
             }
+            .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, 30)
+            .padding(.top, 60)
+
+            Button(action: {
+                withAnimation {
+                    leftInset = geometry.size.width * maxPanelWidthPercentage
+                }
+            }) {
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.black)
+
+                    Text("1")
+                        .font(.caption2)
+                        .foregroundColor(.white)
+                        .padding(6)
+                        .background(Color.red)
+                        .clipShape(Circle())
+                        .offset(x: 10, y: -10)
+                }
+                .padding()
+                .background(Color.white)
+                .clipShape(Circle())
+                .shadow(radius: 10)
+            }
+            .position(x: 60, y: geometry.size.height - 65)
+
+            Button(action: {
+                withAnimation {
+                    rightInset = geometry.size.width * maxPanelWidthPercentage
+                }
+            }) {
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "person.circle")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(.black)
+
+                    Text("1")
+                        .font(.caption2)
+                        .foregroundColor(.white)
+                        .padding(6)
+                        .background(Color.red)
+                        .clipShape(Circle())
+                        .offset(x: 10, y: -10)
+                }
+                .padding()
+                .background(Color.white)
+                .clipShape(Circle())
+                .shadow(radius: 10)
+            }
+            .position(x: geometry.size.width - 60, y: geometry.size.height - 65)
 
             Rectangle()
                 .fill(Color.clear)
-                .frame(width: 28 + leftInset)
+                .frame(width: hitAreaWidth + leftInset)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture()
@@ -102,7 +164,7 @@ struct ContentView: View {
             
             Rectangle()
                 .fill(Color.clear)
-                .frame(width: 28 + rightInset)
+                .frame(width: hitAreaWidth + rightInset)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture()
@@ -127,6 +189,7 @@ struct ContentView: View {
                 .frame(maxHeight: .infinity)
                 .position(x: geometry.size.width, y: geometry.size.height / 2)
         }
+        .ignoresSafeArea()
     }
 }
 
