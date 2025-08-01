@@ -182,12 +182,12 @@ struct ContentView: View {
                             if startBottomInset == 0 {
                                 startBottomInset = bottomInset
                             }
-                            let proposed = max(0, min(geometry.size.height * 1.5, startBottomInset - value.translation.height))
+                            let proposed = max(0, min(geometry.size.height * 1.0, startBottomInset - value.translation.height))
                             bottomInset = proposed
                         }
                         .onEnded { value in
                             withAnimation {
-                                let thresholds: [CGFloat] = [0, geometry.size.height * 0.5, geometry.size.height * 1.5]
+                                let thresholds: [CGFloat] = [0, geometry.size.height * 0.5, geometry.size.height * 1]
                                 let closest = thresholds.min(by: {
                                     abs(bottomInset - $0) < abs(bottomInset - $1)
                                 }) ?? 0
