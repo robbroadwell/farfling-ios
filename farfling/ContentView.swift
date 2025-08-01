@@ -276,8 +276,13 @@ struct ContentView: View {
                         Spacer()
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.3)) {
-                                showTopSearchPanel = true
-                                showBottomDrawer = false
+                                if showTopSearchPanel {
+                                    showTopSearchPanel = false
+                                    showBottomDrawer = true
+                                } else {
+                                    showTopSearchPanel = true
+                                    showBottomDrawer = false
+                                }
                             }
                         }) {
                             Image(systemName: "magnifyingglass")
@@ -350,8 +355,11 @@ struct ContentView: View {
                         .frame(height: 85)
                     VisualEffectBlur(blurStyle: .systemMaterial)
                         .frame(maxWidth: .infinity)
-                        .frame(height: geometry.size.height * 0.85)
-                        .transition(.move(edge: .top))
+                        .frame(height: geometry.size.height * 0.825)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        ))
                         .overlay(
                             VStack {
                                 Spacer()
@@ -359,6 +367,12 @@ struct ContentView: View {
                                     .fill(Color.secondary)
                                     .frame(width: 40, height: 6)
                                     .padding(.bottom, 12)
+                                    .onTapGesture {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            showTopSearchPanel = false
+                                            showBottomDrawer = true
+                                        }
+                                    }
                             }
                         )
                         .gesture(
