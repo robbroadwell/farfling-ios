@@ -86,10 +86,83 @@ struct ContentView: View {
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
             
+            
+            
+            
+            ZStack(alignment: .top) {
+                Rectangle()
+                    .fill(Color(hex: "#CFCFCF"))
+                    .frame(height: geometry.size.height * 1.5)
+                    .frame(maxWidth: .infinity)
+                Capsule()
+                    .fill(Color.white)
+                    .frame(width: 40, height: 6)
+                    .padding(.top, 8)
+            }
+            .offset(y: showBottomDrawer ? 0 : 100)
+            .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
+            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
+            .animation(.easeInOut(duration: 0.3), value: bottomInset)
+            .onTapGesture {
+                withAnimation {
+                    if bottomInset == 0 {
+                        bottomInset = geometry.size.height * 0.5
+                        triggerHaptic()
+                    } else if bottomInset == geometry.size.height * 0.5 {
+                        bottomInset = geometry.size.height
+                        isDrawerFullyExpanded = true
+                        triggerHaptic()
+                    }
+                }
+            }
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        if startBottomInset == 0 {
+                            startBottomInset = bottomInset
+                        }
+                        let proposed = max(0, min(geometry.size.height * 1.0, startBottomInset - value.translation.height))
+                        bottomInset = proposed
+                    }
+                    .onEnded { value in
+                        withAnimation {
+                            let thresholds: [CGFloat] = [0, geometry.size.height * 0.5, geometry.size.height]
+                            let closest = thresholds.min(by: {
+                                abs(bottomInset - $0) < abs(bottomInset - $1)
+                            }) ?? 0
+                            bottomInset = closest
+                            isDrawerFullyExpanded = closest == geometry.size.height
+                            startBottomInset = 0
+                            if closest == 0 || closest == geometry.size.height * 0.5 || isDrawerFullyExpanded {
+                                triggerHaptic()
+                            }
+                        }
+                    }
+            )
+            
+            if isDrawerFullyExpanded {
+                Button(action: {
+                    withAnimation {
+                        bottomInset = 0
+                        isDrawerFullyExpanded = false
+                        triggerHaptic()
+                    }
+                }) {
+                    Text("Map")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.black.opacity(0.8))
+                        .clipShape(Capsule())
+                }
+                .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
+            }
+            
+            // Moved and refactored the left button into the HStack above
+            
             ZStack {
                 HStack {
-                    
-
                     Button(action: {
                         withAnimation {
                             leftInset = geometry.size.width * maxPanelWidthPercentage
@@ -149,79 +222,6 @@ struct ContentView: View {
             .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
             .padding(.top, 60)
-            
-            
-            Button {
-                // no action needed here, tap gesture below handles tap
-            } label: {
-                ZStack(alignment: .top) {
-                    Rectangle()
-                        .fill(Color(hex: "#CFCFCF"))
-                        .frame(height: geometry.size.height * 1.5)
-                        .frame(maxWidth: .infinity)
-                    Capsule()
-                        .fill(Color.white)
-                        .frame(width: 40, height: 6)
-                        .padding(.top, 8)
-                }
-                .offset(y: showBottomDrawer ? 0 : 100)
-                .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
-                .animation(.easeInOut(duration: 0.3), value: bottomInset)
-                .onTapGesture {
-                    if bottomInset == 0 {
-                        withAnimation {
-                            bottomInset = geometry.size.height * 0.5
-                            triggerHaptic()
-                        }
-                    }
-                }
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            if startBottomInset == 0 {
-                                startBottomInset = bottomInset
-                            }
-                            let proposed = max(0, min(geometry.size.height * 1.0, startBottomInset - value.translation.height))
-                            bottomInset = proposed
-                        }
-                        .onEnded { value in
-                            withAnimation {
-                                let thresholds: [CGFloat] = [0, geometry.size.height * 0.5, geometry.size.height * 1]
-                                let closest = thresholds.min(by: {
-                                    abs(bottomInset - $0) < abs(bottomInset - $1)
-                                }) ?? 0
-                                bottomInset = closest
-                                isDrawerFullyExpanded = closest == geometry.size.height * 1.5
-                                startBottomInset = 0
-                                if closest == 0 || closest == geometry.size.height * 0.5 || isDrawerFullyExpanded {
-                                    triggerHaptic()
-                                }
-                            }
-                        }
-                )
-            }
-            
-            if isDrawerFullyExpanded {
-                Button(action: {
-                    withAnimation {
-                        bottomInset = 0
-                        isDrawerFullyExpanded = false
-                        triggerHaptic()
-                    }
-                }) {
-                    Text("Map")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.black.opacity(0.8))
-                        .clipShape(Capsule())
-                }
-                .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
-            }
-            
-            // Moved and refactored the left button into the HStack above
 
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
