@@ -35,8 +35,103 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            map
-            overlay
+            HStack(alignment: .top, spacing: 0) {
+                // Left panel
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach([
+                        ("figure.hiking", "Hiking"),
+                        ("bicycle", "Cycling"),
+                        ("skiing", "Skiing"),
+                        ("kayak", "Kayaking"),
+                        ("mountain.2", "Climbing"),
+                        ("surfboard", "Surfing"),
+                        ("sailboat", "Sailing"),
+                        ("scuba.dive", "Diving")
+                    ], id: \.1) {
+                        icon,
+                        label in
+                        HStack {
+                            Image(systemName: icon)
+                                .frame(width: 15)
+                            Text(label)
+                                .font(
+                                    .system(
+                                        size: 12,
+                                        weight: .bold
+                                    )
+                                )
+                        }
+                        .foregroundColor(Color(hex: "#0A2C46"))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color.white)
+                        .clipShape(Capsule())
+                    }
+                    Spacer()
+                }
+                .padding(.top, 60)
+                .padding(.leading, 12)
+
+                Spacer()
+
+                // Right panel
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Start date").font(.subheadline)
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .frame(height: 40)
+                            .overlay(
+                                Text("Jul 6, 2024")
+                                    .font(
+                                        .system(
+                                            size: 12,
+                                            weight: .bold
+                                        )
+                                    )
+                                
+                            )
+                        Text("End date").font(.subheadline)
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .frame(height: 40)
+                            .overlay(
+                                Text("Jul 12, 2024")
+                                    .font(
+                                        .system(
+                                            size: 12,
+                                            weight: .bold
+                                        )
+                                    )
+                            )
+                    }
+                }
+                .padding(20)
+            }
+            .ignoresSafeArea()
+
+            ZStack {
+                map
+                overlay
+            }
+            .ignoresSafeArea()
+            .mask(
+                GeometryReader { geometry in
+                    let width = geometry.size.width
+                    let height = geometry.size.height
+
+                    Path { path in
+                        let holeRect = CGRect(
+                            x: borderSize + leftInset,
+                            y: borderSize + headerSize,
+                            width: width - borderSize * 2 - leftInset - rightInset,
+                            height: height - borderSize * 2 - headerSize
+                        )
+                        path.addRect(holeRect)
+                    }
+                }
+                .ignoresSafeArea()
+            )
         }
     }
     
@@ -71,11 +166,11 @@ struct ContentView: View {
             }
         }
         .ignoresSafeArea()
-        .padding(.horizontal, borderSize)
     }
     
     var overlay: some View {
         GeometryReader { geometry in
+            let iconColor = darkMode ? Color.white : Color.black
             let width = geometry.size.width
             let height = geometry.size.height
             let holeRect = CGRect(
@@ -173,7 +268,7 @@ struct ContentView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(height: 25)
-                                    .foregroundColor(.black)
+                                    .foregroundColor(iconColor)
                                 VStack {
                                     HStack {
                                         Spacer()
@@ -196,21 +291,23 @@ struct ContentView: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 25)
-                                .foregroundColor(.black)
+                                .foregroundColor(iconColor)
                         }
                         Spacer()
                         Image("Logo")
+                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 30)
                             .padding(.top, 5)
+                            .foregroundColor(iconColor)
                         Spacer()
                         Button(action: {}) {
                             Image(systemName: "bell")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 25)
-                                .foregroundColor(.black)
+                                .foregroundColor(iconColor)
                         }
                         Spacer()
                         Button(action: {
@@ -223,7 +320,7 @@ struct ContentView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(height: 25)
-                                    .foregroundColor(.black)
+                                    .foregroundColor(iconColor)
                                 VStack {
                                     HStack {
                                         Spacer()
