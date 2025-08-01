@@ -14,7 +14,8 @@ struct ContentView: View {
     }
     
     let hitAreaWidth: CGFloat = 40
-    let maxPanelWidthPercentage: CGFloat = 0.475
+    let maxPanelWidthPercentage: CGFloat = 0.30
+    let overshootFactor: CGFloat = 1.15
     let borderSize: CGFloat = 8
     let headerSize: CGFloat = 0
     
@@ -371,11 +372,13 @@ struct ContentView: View {
                             if value.translation == .zero {
                                 startLeftInset = leftInset
                             }
-                            let proposed = max(0, min(geometry.size.width * 0.5, startLeftInset + value.translation.width))
+                            let maxDrag = geometry.size.width * maxPanelWidthPercentage * overshootFactor
+                            let proposed = max(0, min(maxDrag, startLeftInset + value.translation.width))
                             leftInset = proposed
                         }
                         .onEnded { value in
-                            withAnimation {
+                            withAnimation(.spring()) {
+                                // Snap only to 0 or geometry.size.width * maxPanelWidthPercentage
                                 let thresholds: [CGFloat] = [0, maxPanelWidthPercentage]
                                 let closest = thresholds.min(by: { abs(leftInset - geometry.size.width * $0) < abs(leftInset - geometry.size.width * $1) }) ?? 0
                                 leftInset = geometry.size.width * closest
