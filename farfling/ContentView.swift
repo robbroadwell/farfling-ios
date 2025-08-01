@@ -15,8 +15,7 @@ struct ContentView: View {
     
     let holeRadius: CGFloat = 0 // 47.28
     let hitAreaWidth: CGFloat = 60
-    let maxPanelWidthPercentage: CGFloat = 0.9
-    let overshootFactor: CGFloat = 1
+    let maxPanelWidthPercentage: CGFloat = 0.5
     let borderSize: CGFloat = 0
     let headerSize: CGFloat = 0
     
@@ -106,37 +105,7 @@ struct ContentView: View {
         }
     }
     
-    @ViewBuilder
-    var mapButton: some View {
-        GeometryReader { geometry in
-            let maxInset = UIScreen.main.bounds.width * maxPanelWidthPercentage
-            let isFullyOpen = leftInset == maxInset || rightInset == maxInset
-
-            ZStack {
-                Button(action: {
-                    withAnimation {
-                        leftInset = 0
-                        rightInset = 0
-                        triggerHaptic()
-                    }
-                }) {
-                    Text("Map")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.black.opacity(0.8))
-                        .clipShape(Capsule())
-                }
-                .contentShape(Rectangle())
-                .zIndex(10)
-                .allowsHitTesting(isFullyOpen)
-                .opacity(isFullyOpen ? 1 : 0)
-                .animation(.easeInOut(duration: 0.3), value: isFullyOpen)
-            }
-            .position(x: geometry.size.width / 2, y: geometry.size.height - 25)
-        }
-    }
+    
     
     var body: some View {
         ZStack {
@@ -282,9 +251,10 @@ struct ContentView: View {
                 
                 Spacer()
             }
+            .padding(.top, 50)
             
-            mapButton
         }
+        .ignoresSafeArea()
     }
     
     var map: some View {
@@ -332,7 +302,7 @@ struct ContentView: View {
                 height: height - borderSize * 2 - headerSize
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: holeRadius)
-            
+
             ZStack(alignment: .top) {
                 VisualEffectBlur(blurStyle: .systemMaterial)
                     .frame(height: geometry.size.height * 1.5)
@@ -527,6 +497,25 @@ struct ContentView: View {
                 .zIndex(2)
             }
 
+            // Begin overlay dimming and blur
+            let maxInset = geometry.size.width * maxPanelWidthPercentage
+            let dimmingOpacity = max(leftInset, rightInset) / maxInset
+
+            ZStack {
+                Color.black.opacity(0.8 * dimmingOpacity)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            leftInset = 0
+                            rightInset = 0
+                        }
+                    }
+            }
+            .transition(.opacity)
+            .animation(.easeInOut(duration: 0.3), value: dimmingOpacity)
+            .allowsHitTesting(leftInset > 0 || rightInset > 0)
+            // End overlay dimming and blur
             
 
             Canvas { context, size in
@@ -548,9 +537,15 @@ struct ContentView: View {
                             if value.translation == .zero {
                                 startLeftInset = leftInset
                             }
-                            let maxDrag = geometry.size.width * maxPanelWidthPercentage * overshootFactor
+                            let maxDrag = geometry.size.width * maxPanelWidthPercentage
                             let proposed = max(0, min(maxDrag, startLeftInset + value.translation.width))
                             leftInset = proposed
+
+                            // If right drawer is open, directly reduce it by the same amount
+                            if rightInset > 0 {
+                                let remaining = max(0, geometry.size.width * maxPanelWidthPercentage - proposed)
+                                rightInset = remaining
+                            }
                         }
                         .onEnded { value in
                             withAnimation(.spring()) {
@@ -567,7 +562,7 @@ struct ContentView: View {
                 )
                 .frame(maxHeight: .infinity)
                 .position(x: 0, y: geometry.size.height / 2)
-            
+
             Rectangle()
                 .fill(Color.clear)
                 .frame(width: hitAreaWidth + rightInset)
@@ -578,9 +573,15 @@ struct ContentView: View {
                             if value.translation == .zero {
                                 startRightInset = rightInset
                             }
-                            let maxDrag = geometry.size.width * maxPanelWidthPercentage * overshootFactor
+                            let maxDrag = geometry.size.width * maxPanelWidthPercentage
                             let proposed = max(0, min(maxDrag, startRightInset + (-value.translation.width)))
                             rightInset = proposed
+
+                            // If left drawer is open, directly reduce it by the same amount
+                            if leftInset > 0 {
+                                let remaining = max(0, geometry.size.width * maxPanelWidthPercentage - proposed)
+                                leftInset = remaining
+                            }
                         }
                         .onEnded { value in
                             withAnimation(.spring()) {
@@ -598,7 +599,6 @@ struct ContentView: View {
                 )
                 .frame(maxHeight: .infinity)
                 .position(x: geometry.size.width, y: geometry.size.height / 2)
-            
         }
         .ignoresSafeArea()
     }
