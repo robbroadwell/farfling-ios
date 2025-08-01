@@ -13,6 +13,7 @@ struct ContentView: View {
         darkMode ? borderColorDark : borderColorLight
     }
     
+    let holeRadius: CGFloat = 47.28 // 0
     let hitAreaWidth: CGFloat = 40
     let maxPanelWidthPercentage: CGFloat = 0.47
     let overshootFactor: CGFloat = 1.15
@@ -102,6 +103,8 @@ struct ContentView: View {
             }
             .ignoresSafeArea()
 
+            
+
             ZStack {
                 map
                     .allowsHitTesting(!(showTopSearchPanel || showLogoPanel || showFiltersPanel))
@@ -125,6 +128,135 @@ struct ContentView: View {
                 }
                 .ignoresSafeArea()
             )
+            
+            // Header ZStack moved out of overlay, now here above the map/overlay ZStack
+            VStack {
+                ZStack {
+                    VisualEffectBlur(blurStyle: .systemUltraThinMaterial)
+                        .edgesIgnoringSafeArea(.top)
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                withAnimation {
+                                    leftInset = UIScreen.main.bounds.width * maxPanelWidthPercentage
+                                }
+                            }) {
+                                ZStack {
+                                    Image(systemName: "bell")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(height: 25)
+                                        .foregroundColor(darkMode ? Color.white : Color.black)
+                                    VStack {
+                                        HStack {
+                                            Spacer()
+                                            Text("1")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                                .padding(6)
+                                                .background(Color.red)
+                                                .clipShape(Circle())
+                                                .offset(x: 6, y: -6)
+                                        }
+                                        Spacer()
+                                    }
+                                }
+                                .frame(width: 30, height: 30)
+                            }
+                            Spacer()
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    let willOpen = !showTopSearchPanel
+                                    showTopSearchPanel = willOpen
+                                    showLogoPanel = false
+                                    showFiltersPanel = false
+                                    showBottomDrawer = !willOpen
+                                }
+                            }) {
+                                Image(systemName: "slider.horizontal.3")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 25)
+                                    .foregroundColor(darkMode ? Color.white : Color.black)
+                            }
+                            Spacer()
+                            Image("Logo")
+                                .renderingMode(.template)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 30)
+                                .padding(.top, 5)
+                                .foregroundColor(darkMode ? Color.white : Color.black)
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        let willOpen = !showLogoPanel
+                                        showLogoPanel = willOpen
+                                        showFiltersPanel = false
+                                        showTopSearchPanel = false
+                                        showBottomDrawer = !(willOpen)
+                                    }
+                                }
+                            Spacer()
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    let willOpen = !showFiltersPanel
+                                    showFiltersPanel = willOpen
+                                    showLogoPanel = false
+                                    showTopSearchPanel = false
+                                    showBottomDrawer = !(willOpen)
+                                }
+                            }) {
+                                Image(systemName: "person.crop.circle")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 25)
+                                    .foregroundColor(darkMode ? Color.white : Color.black)
+                            }
+                            Spacer()
+                            Button(action: {
+                                withAnimation {
+                                    rightInset = UIScreen.main.bounds.width * maxPanelWidthPercentage
+                                }
+                            }) {
+                                ZStack {
+                                    Image(systemName: "magnifyingglass")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(height: 25)
+                                        .foregroundColor(darkMode ? Color.white : Color.black)
+                                    VStack {
+                                        HStack {
+                                            Spacer()
+                                            Text("1")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                                .padding(6)
+                                                .background(Color.red)
+                                                .clipShape(Circle())
+                                                .offset(x: 6, y: -6)
+                                        }
+                                        Spacer()
+                                    }
+                                }
+                                .frame(width: 30, height: 30)
+                            }
+                            Spacer()
+                        }
+                        Rectangle()
+                            .fill(Color.white.opacity(0.5))
+                            .frame(height: 2)
+                            .frame(maxWidth: .infinity)
+                        //                        .shadow(radius: 3)
+                    }
+                    .padding(.top, 40)
+                }
+                .frame(height: headerSize)
+                .frame(maxWidth: .infinity, alignment: .top)
+                
+                Spacer()
+            }
+            
         }
     }
     
@@ -172,7 +304,7 @@ struct ContentView: View {
                 width: width - borderSize * 2 - leftInset - rightInset,
                 height: height - borderSize * 2 - headerSize
             )
-            let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
+            let holePath = Path(roundedRect: holeRect, cornerRadius: holeRadius)
             
             ZStack(alignment: .top) {
                 VisualEffectBlur(blurStyle: .systemMaterial)
@@ -245,128 +377,7 @@ struct ContentView: View {
             
             // Moved and refactored the left button into the HStack above
             
-            ZStack {
-                VisualEffectBlur(blurStyle: .systemUltraThinMaterial)
-                    .edgesIgnoringSafeArea(.top)
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            withAnimation {
-                                leftInset = geometry.size.width * maxPanelWidthPercentage
-                            }
-                        }) {
-                            ZStack {
-                                Image(systemName: "bell")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: 25)
-                                    .foregroundColor(iconColor)
-                                VStack {
-                                    HStack {
-                                        Spacer()
-                                        Text("1")
-                                            .font(.caption2)
-                                            .foregroundColor(.white)
-                                            .padding(6)
-                                            .background(Color.red)
-                                            .clipShape(Circle())
-                                            .offset(x: 6, y: -6)
-                                    }
-                                    Spacer()
-                                }
-                            }
-                            .frame(width: 30, height: 30)
-                        }
-                        Spacer()
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                let willOpen = !showTopSearchPanel
-                                showTopSearchPanel = willOpen
-                                showLogoPanel = false
-                                showFiltersPanel = false
-                                showBottomDrawer = !willOpen
-                            }
-                        }) {
-                            Image(systemName: "magnifyingglass")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 25)
-                                .foregroundColor(iconColor)
-                        }
-                        Spacer()
-                        Image("Logo")
-                            .renderingMode(.template)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 30)
-                            .padding(.top, 5)
-                            .foregroundColor(iconColor)
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    let willOpen = !showLogoPanel
-                                    showLogoPanel = willOpen
-                                    showFiltersPanel = false
-                                    showTopSearchPanel = false
-                                    showBottomDrawer = !(willOpen)
-                                }
-                            }
-                        Spacer()
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                let willOpen = !showFiltersPanel
-                                showFiltersPanel = willOpen
-                                showLogoPanel = false
-                                showTopSearchPanel = false
-                                showBottomDrawer = !(willOpen)
-                            }
-                        }) {
-                            Image(systemName: "slider.horizontal.3")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 25)
-                                .foregroundColor(iconColor)
-                        }
-                        Spacer()
-                        Button(action: {
-                            withAnimation {
-                                rightInset = geometry.size.width * maxPanelWidthPercentage
-                            }
-                        }) {
-                            ZStack {
-                                Image(systemName: "person.crop.circle")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: 25)
-                                    .foregroundColor(iconColor)
-                                VStack {
-                                    HStack {
-                                        Spacer()
-                                        Text("1")
-                                            .font(.caption2)
-                                            .foregroundColor(.white)
-                                            .padding(6)
-                                            .background(Color.red)
-                                            .clipShape(Circle())
-                                            .offset(x: 6, y: -6)
-                                    }
-                                    Spacer()
-                                }
-                            }
-                            .frame(width: 30, height: 30)
-                        }
-                        Spacer()
-                    }
-                    Rectangle()
-                        .fill(Color.white.opacity(0.5))
-                        .frame(height: 2)
-                        .frame(maxWidth: .infinity)
-//                        .shadow(radius: 3)
-                }
-            }
-            .frame(height: headerSize)
-            .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, 65)
+            // header ZStack moved to main body, removed from overlay
 
             // Top sliding search panel
             if showTopSearchPanel {
