@@ -7,15 +7,15 @@ struct ContentView: View {
     var darkMode: Bool {
         colorScheme == .dark
     }
-    let borderColorDark: Color = Color(hex: "#000000")
-    let borderColorLight: Color = Color(hex: "#FFFFFF")
+    let borderColorDark: Color = Color(hex: "#FFFFFF")
+    let borderColorLight: Color = Color(hex: "#000000")
     var borderColor: Color {
         darkMode ? borderColorDark : borderColorLight
     }
     
     let holeRadius: CGFloat = 0 // 47.28
-    let hitAreaWidth: CGFloat = 40
-    let maxPanelWidthPercentage: CGFloat = 1
+    let hitAreaWidth: CGFloat = 60
+    let maxPanelWidthPercentage: CGFloat = 0.9
     let overshootFactor: CGFloat = 1
     let borderSize: CGFloat = 0
     let headerSize: CGFloat = 0
@@ -42,61 +42,67 @@ struct ContentView: View {
     
     var panels: some View {
         ZStack {
-            if leftInset > 0 {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach([
-                        ("figure.hiking", "Hiking"),
-                        ("bicycle", "Cycling"),
-                        ("skiing", "Skiing"),
-                        ("kayak", "Kayaking"),
-                        ("mountain.2", "Climbing"),
-                        ("surfboard", "Surfing"),
-                        ("sailboat", "Sailing"),
-                        ("scuba.dive", "Diving")
-                    ], id: \.1) { icon, label in
-                        HStack {
-                            Image(systemName: icon)
-                                .frame(width: 15)
-                            Text(label)
-                                .font(.system(size: 12, weight: .bold))
+            Group {
+                if rightInset == 0 {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach([
+                            ("figure.hiking", "Hiking"),
+                            ("bicycle", "Cycling"),
+                            ("skiing", "Skiing"),
+                            ("kayak", "Kayaking"),
+                            ("mountain.2", "Climbing"),
+                            ("surfboard", "Surfing"),
+                            ("sailboat", "Sailing"),
+                            ("scuba.dive", "Diving")
+                        ], id: \.1) { icon, label in
+                            HStack {
+                                Image(systemName: icon)
+                                    .frame(width: 15)
+                                Text(label)
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundColor(Color(hex: "#0A2C46"))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
+                            .background(Color.white)
+                            .clipShape(Capsule())
                         }
-                        .foregroundColor(Color(hex: "#0A2C46"))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
-                        .background(Color.white)
-                        .clipShape(Capsule())
+                        Spacer()
                     }
-                    Spacer()
-                }
-                .padding(.top, 60)
-                .padding(.leading, 12)
-                .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
-            }
-
-            if rightInset > 0 {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Start date").font(.subheadline)
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            .frame(height: 40)
-                            .overlay(
-                                Text("Jul 6, 2024")
-                                    .font(.system(size: 12, weight: .bold))
-                            )
-                        Text("End date").font(.subheadline)
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            .frame(height: 40)
-                            .overlay(
-                                Text("Jul 12, 2024")
-                                    .font(.system(size: 12, weight: .bold))
-                            )
-                    }
+                    .padding(.top, 60)
+                    .padding(.leading, 12)
                     .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
                 }
             }
+            .transaction { $0.animation = nil }
+
+            Group {
+                if leftInset == 0 {
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Start date").font(.subheadline)
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                .frame(height: 40)
+                                .overlay(
+                                    Text("Jul 6, 2024")
+                                        .font(.system(size: 12, weight: .bold))
+                                )
+                            Text("End date").font(.subheadline)
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                .frame(height: 40)
+                                .overlay(
+                                    Text("Jul 12, 2024")
+                                        .font(.system(size: 12, weight: .bold))
+                                )
+                        }
+                        .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
+                    }
+                }
+            }
+            .transaction { $0.animation = nil }
         }
     }
     
@@ -128,15 +134,13 @@ struct ContentView: View {
                 .opacity(isFullyOpen ? 1 : 0)
                 .animation(.easeInOut(duration: 0.3), value: isFullyOpen)
             }
-            .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
+            .position(x: geometry.size.width / 2, y: geometry.size.height - 25)
         }
     }
     
     var body: some View {
         ZStack {
             panels
-            
-            
 
             ZStack {
                 map
@@ -145,21 +149,10 @@ struct ContentView: View {
             }
             .ignoresSafeArea()
             .mask(
-                GeometryReader { geometry in
-                    let width = geometry.size.width
-                    let height = geometry.size.height
-
-                    Path { path in
-                        let holeRect = CGRect(
-                            x: borderSize + leftInset,
-                            y: borderSize + headerSize,
-                            width: width - borderSize * 2 - leftInset - rightInset,
-                            height: height - borderSize * 2 - headerSize
-                        )
-                        path.addRect(holeRect)
-                    }
-                }
-                .ignoresSafeArea()
+                AnimatedHoleMask(leftInset: leftInset, rightInset: rightInset)
+                    .fill(Color.black)
+                    .animation(.easeInOut(duration: 0.3), value: leftInset)
+                    .animation(.easeInOut(duration: 0.3), value: rightInset)
             )
             
             // Header ZStack moved out of overlay, now here above the map/overlay ZStack
@@ -176,7 +169,7 @@ struct ContentView: View {
                                 }
                             }) {
                                 ZStack {
-                                    Image(systemName: "bell")
+                                    Image(systemName: "magnifyingglass")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(height: 25)
@@ -207,7 +200,7 @@ struct ContentView: View {
                                     showBottomDrawer = !willOpen
                                 }
                             }) {
-                                Image(systemName: "slider.horizontal.3")
+                                Image(systemName: "person.crop.circle")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(height: 25)
@@ -240,7 +233,7 @@ struct ContentView: View {
                                     showBottomDrawer = !(willOpen)
                                 }
                             }) {
-                                Image(systemName: "person.crop.circle")
+                                Image(systemName: "bell")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(height: 25)
@@ -253,7 +246,7 @@ struct ContentView: View {
                                 }
                             }) {
                                 ZStack {
-                                    Image(systemName: "magnifyingglass")
+                                    Image(systemName: "slider.horizontal.3")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(height: 25)
@@ -277,7 +270,7 @@ struct ContentView: View {
                             Spacer()
                         }
                         Rectangle()
-                            .fill(Color.white.opacity(0.5))
+                            .fill(borderColor)
                             .frame(height: 2)
                             .frame(maxWidth: .infinity)
                         //                        .shadow(radius: 3)
@@ -345,13 +338,19 @@ struct ContentView: View {
                     .frame(height: geometry.size.height * 1.5)
                     .frame(maxWidth: .infinity)
                 Capsule()
-                    .fill(Color.white)
+                    .fill(borderColor)
                     .frame(width: 40, height: 6)
                     .padding(.top, 8)
+                Rectangle()
+                    .fill(borderColor)
+                    .frame(height: 2)
+                    .frame(maxWidth: .infinity)
             }
             .offset(y: showBottomDrawer ? 0 : 100)
             .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
             .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
+            .animation(.easeInOut(duration: 0.3), value: leftInset)
+            .animation(.easeInOut(duration: 0.3), value: rightInset)
             .animation(.easeInOut(duration: 0.3), value: bottomInset)
             .onTapGesture {
                 withAnimation {
@@ -408,12 +407,7 @@ struct ContentView: View {
                 }
                 .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
             }
-            
-            // Moved and refactored the left button into the HStack above
-            
-            // header ZStack moved to main body, removed from overlay
 
-            // Top sliding search panel
             if showTopSearchPanel {
                 VStack(spacing: 0) {
                     Color.clear
@@ -584,11 +578,12 @@ struct ContentView: View {
                             if value.translation == .zero {
                                 startRightInset = rightInset
                             }
-                            let proposed = max(0, min(geometry.size.width * 0.5, startRightInset - value.translation.width))
+                            let maxDrag = geometry.size.width * maxPanelWidthPercentage * overshootFactor
+                            let proposed = max(0, min(maxDrag, startRightInset + (-value.translation.width)))
                             rightInset = proposed
                         }
                         .onEnded { value in
-                            withAnimation {
+                            withAnimation(.spring()) {
                                 let thresholds: [CGFloat] = [0, maxPanelWidthPercentage]
                                 let closest = thresholds.min(by: {
                                     abs(rightInset - geometry.size.width * $0) < abs(rightInset - geometry.size.width * $1)
@@ -645,5 +640,30 @@ extension ContentView {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.prepare()
         generator.impactOccurred()
+    }
+}
+
+struct AnimatedHoleMask: Shape {
+    var leftInset: CGFloat
+    var rightInset: CGFloat
+
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(leftInset, rightInset) }
+        set {
+            leftInset = newValue.first
+            rightInset = newValue.second
+        }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        let holeRect = CGRect(
+            x: leftInset,
+            y: 0,
+            width: rect.width - leftInset - rightInset,
+            height: rect.height
+        )
+        var path = Path()
+        path.addRect(holeRect)
+        return path
     }
 }
