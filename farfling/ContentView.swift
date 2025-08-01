@@ -162,66 +162,101 @@ struct ContentView: View {
             // Moved and refactored the left button into the HStack above
             
             ZStack {
-                HStack {
-                    Button(action: {
-                        withAnimation {
-                            leftInset = geometry.size.width * maxPanelWidthPercentage
+                VisualEffectBlur(blurStyle: .systemUltraThinMaterial)
+                    .edgesIgnoringSafeArea(.top)
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            withAnimation {
+                                leftInset = geometry.size.width * maxPanelWidthPercentage
+                            }
+                        }) {
+                            ZStack {
+                                Image(systemName: "magnifyingglass")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 25)
+                                    .foregroundColor(.black)
+                                VStack {
+                                    HStack {
+                                        Spacer()
+                                        Text("1")
+                                            .font(.caption2)
+                                            .foregroundColor(.white)
+                                            .padding(6)
+                                            .background(Color.red)
+                                            .clipShape(Circle())
+                                            .offset(x: 6, y: -6)
+                                    }
+                                    Spacer()
+                                }
+                            }
+                            .frame(width: 30, height: 30)
                         }
-                    }) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "magnifyingglass")
+                        Spacer()
+                        Button(action: {}) {
+                            Image(systemName: "person.crop.circle")
                                 .resizable()
-                                .frame(width: 25, height: 25)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 25)
                                 .foregroundColor(.black)
-
-                            Text("1")
-                                .font(.caption2)
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .background(Color.red)
-                                .clipShape(Circle())
-                                .offset(x: 10, y: -10)
                         }
-                    }
-                    
-                    Spacer()
-                    
-                    Image("Logo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 140)
-                        .padding(.top, 5)
-
-                    Spacer()
-
-                    Button(action: {
-                        withAnimation {
-                            rightInset = geometry.size.width * maxPanelWidthPercentage
-                        }
-                    }) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "slider.horizontal.3")
+                        Spacer()
+                        Image("Logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 30)
+                            .padding(.top, 5)
+                        Spacer()
+                        Button(action: {}) {
+                            Image(systemName: "bell")
                                 .resizable()
-                                .frame(width: 25, height: 25)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 25)
                                 .foregroundColor(.black)
-
-                            Text("1")
-                                .font(.caption2)
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .background(Color.red)
-                                .clipShape(Circle())
-                                .offset(x: 10, y: -10)
                         }
+                        Spacer()
+                        Button(action: {
+                            withAnimation {
+                                rightInset = geometry.size.width * maxPanelWidthPercentage
+                            }
+                        }) {
+                            ZStack {
+                                Image(systemName: "slider.horizontal.3")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 25)
+                                    .foregroundColor(.black)
+                                VStack {
+                                    HStack {
+                                        Spacer()
+                                        Text("1")
+                                            .font(.caption2)
+                                            .foregroundColor(.white)
+                                            .padding(6)
+                                            .background(Color.red)
+                                            .clipShape(Circle())
+                                            .offset(x: 6, y: -6)
+                                    }
+                                    Spacer()
+                                }
+                            }
+                            .frame(width: 30, height: 30)
+                        }
+                        Spacer()
                     }
-
-                    
+                    Rectangle()
+                        .fill(Color.black.opacity(0.5))
+                        .frame(height: 1)
+                        .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 30)
             }
             .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, 60)
+            .padding(.top, 65)
+
+            
 
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
@@ -293,6 +328,16 @@ struct ContentView: View {
         }
         .ignoresSafeArea()
     }
+}
+
+struct VisualEffectBlur: UIViewRepresentable {
+    var blurStyle: UIBlurEffect.Style
+
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: blurStyle))
+    }
+
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
 
 #Preview {
