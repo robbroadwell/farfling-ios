@@ -3,7 +3,10 @@ import MapKit
 import UIKit
 
 struct ContentView: View {
-    let darkMode: Bool = true
+    @Environment(\.colorScheme) private var colorScheme
+    var darkMode: Bool {
+        colorScheme == .dark
+    }
     let borderColorDark: Color = Color(hex: "#000000")
     let borderColorLight: Color = Color(hex: "#FFFFFF")
     var borderColor: Color {
@@ -28,6 +31,7 @@ struct ContentView: View {
     ))
     @State private var bottomInset: CGFloat = 0
     @State private var startBottomInset: CGFloat = 0
+    @State private var isDrawerFullyExpanded = false
     
     var body: some View {
         ZStack {
@@ -84,122 +88,140 @@ struct ContentView: View {
             
             ZStack {
                 HStack {
-                    Spacer()
+                    
+
                     Button(action: {
-                        // Handle login action
-                        triggerHaptic()
+                        withAnimation {
+                            leftInset = geometry.size.width * maxPanelWidthPercentage
+                        }
                     }) {
-                        Text("Log in")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color(hex: "#1A2D51")) // Dark blue text
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(Color(hex: "#FAF6EB")) // Off-white background
-                            .clipShape(Capsule())
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "magnifyingglass")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .foregroundColor(.black)
+
+                            Text("1")
+                                .font(.caption2)
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Color.red)
+                                .clipShape(Circle())
+                                .offset(x: 10, y: -10)
+                        }
                     }
+                    
+                    Spacer()
+                    
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 140)
+                        .padding(.top, 5)
+
+                    Spacer()
+
+                    Button(action: {
+                        withAnimation {
+                            rightInset = geometry.size.width * maxPanelWidthPercentage
+                        }
+                    }) {
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "slider.horizontal.3")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .foregroundColor(.black)
+
+                            Text("1")
+                                .font(.caption2)
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Color.red)
+                                .clipShape(Circle())
+                                .offset(x: 10, y: -10)
+                        }
+                    }
+
+                    
                 }
-                .padding(.trailing, 30)
-                
-                Image("Logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 140)
-                    .padding(.top, 5)
+                .padding(.horizontal, 30)
             }
             .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
             .padding(.top, 60)
             
             
-            ZStack(alignment: .top) {
-                Rectangle()
-                    .fill(Color(hex: "#C19A6B"))
-                    .frame(height: geometry.size.height * 1.5)
-                    .frame(maxWidth: .infinity)
-                Capsule()
-                    .fill(Color.white)
-                    .frame(width: 40, height: 6)
-                    .padding(.top, 8)
-            }
-            .offset(y: showBottomDrawer ? 0 : 100)
-            .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
-            .animation(.easeInOut(duration: 0.3), value: bottomInset)
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        if value.translation == .zero {
-                            startBottomInset = bottomInset
-                        }
-                        let proposed = max(0, min(geometry.size.height * 0.5, startBottomInset - value.translation.height))
-                        bottomInset = proposed
-                    }
-                    .onEnded { value in
+            Button {
+                // no action needed here, tap gesture below handles tap
+            } label: {
+                ZStack(alignment: .top) {
+                    Rectangle()
+                        .fill(Color(hex: "#CFCFCF"))
+                        .frame(height: geometry.size.height * 1.5)
+                        .frame(maxWidth: .infinity)
+                    Capsule()
+                        .fill(Color.white)
+                        .frame(width: 40, height: 6)
+                        .padding(.top, 8)
+                }
+                .offset(y: showBottomDrawer ? 0 : 100)
+                .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
+                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
+                .animation(.easeInOut(duration: 0.3), value: bottomInset)
+                .onTapGesture {
+                    if bottomInset == 0 {
                         withAnimation {
-                            let thresholds: [CGFloat] = [0, geometry.size.height * 0.5]
-                            let closest = thresholds.min(by: {
-                                abs(bottomInset - $0) < abs(bottomInset - $1)
-                            }) ?? 0
-                            bottomInset = closest
-                            startBottomInset = 0
-                            if closest == 0 || closest == geometry.size.height * 0.5 {
-                                triggerHaptic()
+                            bottomInset = geometry.size.height * 0.5
+                            triggerHaptic()
+                        }
+                    }
+                }
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            if startBottomInset == 0 {
+                                startBottomInset = bottomInset
+                            }
+                            let proposed = max(0, min(geometry.size.height * 1.5, startBottomInset - value.translation.height))
+                            bottomInset = proposed
+                        }
+                        .onEnded { value in
+                            withAnimation {
+                                let thresholds: [CGFloat] = [0, geometry.size.height * 0.5, geometry.size.height * 1.5]
+                                let closest = thresholds.min(by: {
+                                    abs(bottomInset - $0) < abs(bottomInset - $1)
+                                }) ?? 0
+                                bottomInset = closest
+                                isDrawerFullyExpanded = closest == geometry.size.height * 1.5
+                                startBottomInset = 0
+                                if closest == 0 || closest == geometry.size.height * 0.5 || isDrawerFullyExpanded {
+                                    triggerHaptic()
+                                }
                             }
                         }
-                    }
                 )
+            }
             
-            Button(action: {
-                withAnimation {
-                    leftInset = geometry.size.width * maxPanelWidthPercentage
-                }
-            }) {
-                ZStack(alignment: .topTrailing) {
-                    Image(systemName: "figure.run")
-                        .resizable()
-                        .frame(width: 25, height: 25)
-                        .foregroundColor(.black)
-
-                    Text("1")
-                        .font(.caption2)
+            if isDrawerFullyExpanded {
+                Button(action: {
+                    withAnimation {
+                        bottomInset = 0
+                        isDrawerFullyExpanded = false
+                        triggerHaptic()
+                    }
+                }) {
+                    Text("Map")
+                        .font(.headline)
                         .foregroundColor(.white)
-                        .padding(6)
-                        .background(Color.red)
-                        .clipShape(Circle())
-                        .offset(x: 10, y: -10)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.black.opacity(0.8))
+                        .clipShape(Capsule())
                 }
-                .padding()
-                .background(Color.white)
-                .clipShape(Circle())
-                .shadow(radius: 10)
+                .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
             }
-            .position(x: 60, y: geometry.size.height - 65)
-
-            Button(action: {
-                withAnimation {
-                    rightInset = geometry.size.width * maxPanelWidthPercentage
-                }
-            }) {
-                ZStack(alignment: .topTrailing) {
-                    Image(systemName: "line.3.horizontal.decrease.circle")
-                        .resizable()
-                        .frame(width: 25, height: 25)
-                        .foregroundColor(.black)
-
-                    Text("1")
-                        .font(.caption2)
-                        .foregroundColor(.white)
-                        .padding(6)
-                        .background(Color.red)
-                        .clipShape(Circle())
-                        .offset(x: 10, y: -10)
-                }
-                .padding()
-                .background(Color.white)
-                .clipShape(Circle())
-                .shadow(radius: 10)
-            }
-            .position(x: geometry.size.width - 60, y: geometry.size.height - 65)
+            
+            // Moved and refactored the left button into the HStack above
 
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
