@@ -14,7 +14,7 @@ struct ContentView: View {
     }
     
     let hitAreaWidth: CGFloat = 40
-    let maxPanelWidthPercentage: CGFloat = 0.30
+    let maxPanelWidthPercentage: CGFloat = 0.47
     let overshootFactor: CGFloat = 1.15
     let borderSize: CGFloat = 8
     let headerSize: CGFloat = 0
@@ -33,6 +33,7 @@ struct ContentView: View {
     @State private var bottomInset: CGFloat = 0
     @State private var startBottomInset: CGFloat = 0
     @State private var isDrawerFullyExpanded = false
+    @State private var showTopSearchPanel = false
     
     var body: some View {
         ZStack {
@@ -48,23 +49,17 @@ struct ContentView: View {
                         ("surfboard", "Surfing"),
                         ("sailboat", "Sailing"),
                         ("scuba.dive", "Diving")
-                    ], id: \.1) {
-                        icon,
-                        label in
+                    ], id: \.1) { icon, label in
                         HStack {
                             Image(systemName: icon)
                                 .frame(width: 15)
                             Text(label)
-                                .font(
-                                    .system(
-                                        size: 12,
-                                        weight: .bold
-                                    )
-                                )
+                                .font(.system(size: 12, weight: .bold))
                         }
                         .foregroundColor(Color(hex: "#0A2C46"))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
+                        .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
                         .background(Color.white)
                         .clipShape(Capsule())
                     }
@@ -72,6 +67,7 @@ struct ContentView: View {
                 }
                 .padding(.top, 60)
                 .padding(.leading, 12)
+                .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
 
                 Spacer()
 
@@ -84,13 +80,7 @@ struct ContentView: View {
                             .frame(height: 40)
                             .overlay(
                                 Text("Jul 6, 2024")
-                                    .font(
-                                        .system(
-                                            size: 12,
-                                            weight: .bold
-                                        )
-                                    )
-                                
+                                    .font(.system(size: 12, weight: .bold))
                             )
                         Text("End date").font(.subheadline)
                         RoundedRectangle(cornerRadius: 12)
@@ -98,16 +88,13 @@ struct ContentView: View {
                             .frame(height: 40)
                             .overlay(
                                 Text("Jul 12, 2024")
-                                    .font(
-                                        .system(
-                                            size: 12,
-                                            weight: .bold
-                                        )
-                                    )
+                                    .font(.system(size: 12, weight: .bold))
                             )
                     }
+                    .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
                 }
                 .padding(20)
+                .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
             }
             .ignoresSafeArea()
 
@@ -265,7 +252,7 @@ struct ContentView: View {
                             }
                         }) {
                             ZStack {
-                                Image(systemName: "magnifyingglass")
+                                Image(systemName: "bell")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(height: 25)
@@ -287,8 +274,13 @@ struct ContentView: View {
                             .frame(width: 30, height: 30)
                         }
                         Spacer()
-                        Button(action: {}) {
-                            Image(systemName: "person.crop.circle")
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showTopSearchPanel = true
+                                showBottomDrawer = false
+                            }
+                        }) {
+                            Image(systemName: "magnifyingglass")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 25)
@@ -304,7 +296,7 @@ struct ContentView: View {
                             .foregroundColor(iconColor)
                         Spacer()
                         Button(action: {}) {
-                            Image(systemName: "bell")
+                            Image(systemName: "slider.horizontal.3")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 25)
@@ -317,7 +309,7 @@ struct ContentView: View {
                             }
                         }) {
                             ZStack {
-                                Image(systemName: "slider.horizontal.3")
+                                Image(systemName: "person.crop.circle")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(height: 25)
@@ -350,6 +342,39 @@ struct ContentView: View {
             .frame(height: headerSize)
             .frame(maxWidth: .infinity, alignment: .top)
             .padding(.top, 65)
+
+            // Top sliding search panel
+            if showTopSearchPanel {
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: 85)
+                    VisualEffectBlur(blurStyle: .systemMaterial)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: geometry.size.height * 0.85)
+                        .transition(.move(edge: .top))
+                        .overlay(
+                            VStack {
+                                Spacer()
+                                Capsule()
+                                    .fill(Color.secondary)
+                                    .frame(width: 40, height: 6)
+                                    .padding(.bottom, 12)
+                            }
+                        )
+                        .gesture(
+                            DragGesture()
+                                .onEnded { value in
+                                    if value.translation.height > 50 {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            showTopSearchPanel = false
+                                            showBottomDrawer = true
+                                        }
+                                    }
+                                }
+                        )
+                }
+                .zIndex(2)
+            }
 
             
 
