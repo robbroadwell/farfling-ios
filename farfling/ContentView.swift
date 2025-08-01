@@ -16,7 +16,7 @@ struct ContentView: View {
     let hitAreaWidth: CGFloat = 40
     let maxPanelWidthPercentage: CGFloat = 0.47
     let overshootFactor: CGFloat = 1.15
-    let borderSize: CGFloat = 8
+    let borderSize: CGFloat = 0
     let headerSize: CGFloat = 0
     
     @State private var leftInset: CGFloat = 0
@@ -33,7 +33,11 @@ struct ContentView: View {
     @State private var bottomInset: CGFloat = 0
     @State private var startBottomInset: CGFloat = 0
     @State private var isDrawerFullyExpanded = false
+    
+    let topPanelHeightOffset: CGFloat = 88
     @State private var showTopSearchPanel = false
+    @State private var showLogoPanel = false
+    @State private var showFiltersPanel = false
     
     var body: some View {
         ZStack {
@@ -100,6 +104,7 @@ struct ContentView: View {
 
             ZStack {
                 map
+                    .allowsHitTesting(!(showTopSearchPanel || showLogoPanel || showFiltersPanel))
                 overlay
             }
             .ignoresSafeArea()
@@ -276,13 +281,11 @@ struct ContentView: View {
                         Spacer()
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.3)) {
-                                if showTopSearchPanel {
-                                    showTopSearchPanel = false
-                                    showBottomDrawer = true
-                                } else {
-                                    showTopSearchPanel = true
-                                    showBottomDrawer = false
-                                }
+                                let willOpen = !showTopSearchPanel
+                                showTopSearchPanel = willOpen
+                                showLogoPanel = false
+                                showFiltersPanel = false
+                                showBottomDrawer = !willOpen
                             }
                         }) {
                             Image(systemName: "magnifyingglass")
@@ -299,8 +302,25 @@ struct ContentView: View {
                             .frame(height: 30)
                             .padding(.top, 5)
                             .foregroundColor(iconColor)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    let willOpen = !showLogoPanel
+                                    showLogoPanel = willOpen
+                                    showFiltersPanel = false
+                                    showTopSearchPanel = false
+                                    showBottomDrawer = !(willOpen)
+                                }
+                            }
                         Spacer()
-                        Button(action: {}) {
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                let willOpen = !showFiltersPanel
+                                showFiltersPanel = willOpen
+                                showLogoPanel = false
+                                showTopSearchPanel = false
+                                showBottomDrawer = !(willOpen)
+                            }
+                        }) {
                             Image(systemName: "slider.horizontal.3")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -352,8 +372,44 @@ struct ContentView: View {
             if showTopSearchPanel {
                 VStack(spacing: 0) {
                     Color.clear
-                        .frame(height: 85)
+                        .frame(height: topPanelHeightOffset)
                     VisualEffectBlur(blurStyle: .systemMaterial)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: geometry.size.height * 0.825)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        ))
+                        .overlay(
+                            VStack {
+                                Spacer()
+                                Capsule()
+                                    .fill(Color.secondary)
+                                    .frame(width: 40, height: 6)
+                                    .padding(.bottom, 12)
+                            }
+                        )
+                        .gesture(
+                            DragGesture()
+                                .onEnded { value in
+                                    if value.translation.height > 50 {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            showTopSearchPanel = false
+                                            showBottomDrawer = true
+                                        }
+                                    }
+                                }
+                        )
+                }
+                .zIndex(2)
+            }
+
+            // Logo dropdown panel
+            if showLogoPanel {
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: topPanelHeightOffset)
+                    VisualEffectBlur(blurStyle: .systemChromeMaterialDark)
                         .frame(maxWidth: .infinity)
                         .frame(height: geometry.size.height * 0.825)
                         .transition(.asymmetric(
@@ -369,7 +425,7 @@ struct ContentView: View {
                                     .padding(.bottom, 12)
                                     .onTapGesture {
                                         withAnimation(.easeInOut(duration: 0.3)) {
-                                            showTopSearchPanel = false
+                                            showLogoPanel = false
                                             showBottomDrawer = true
                                         }
                                     }
@@ -378,9 +434,51 @@ struct ContentView: View {
                         .gesture(
                             DragGesture()
                                 .onEnded { value in
-                                    if value.translation.height > 50 {
+                                    if value.translation.height < -50 {
                                         withAnimation(.easeInOut(duration: 0.3)) {
-                                            showTopSearchPanel = false
+                                            showLogoPanel = false
+                                            showBottomDrawer = true
+                                        }
+                                    }
+                                }
+                        )
+                }
+                .zIndex(2)
+            }
+
+            // Filters dropdown panel
+            if showFiltersPanel {
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: topPanelHeightOffset)
+                    VisualEffectBlur(blurStyle: .systemUltraThinMaterialDark)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: geometry.size.height * 0.825)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        ))
+                        .overlay(
+                            VStack {
+                                Spacer()
+                                Capsule()
+                                    .fill(Color.secondary)
+                                    .frame(width: 40, height: 6)
+                                    .padding(.bottom, 12)
+                                    .onTapGesture {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            showFiltersPanel = false
+                                            showBottomDrawer = true
+                                        }
+                                    }
+                            }
+                        )
+                        .gesture(
+                            DragGesture()
+                                .onEnded { value in
+                                    if value.translation.height < -50 {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            showFiltersPanel = false
                                             showBottomDrawer = true
                                         }
                                     }
