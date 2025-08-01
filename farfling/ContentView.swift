@@ -13,10 +13,10 @@ struct ContentView: View {
         darkMode ? borderColorDark : borderColorLight
     }
     
-    let holeRadius: CGFloat = 47.28 // 0
+    let holeRadius: CGFloat = 0 // 47.28
     let hitAreaWidth: CGFloat = 40
-    let maxPanelWidthPercentage: CGFloat = 0.47
-    let overshootFactor: CGFloat = 1.15
+    let maxPanelWidthPercentage: CGFloat = 1
+    let overshootFactor: CGFloat = 1
     let borderSize: CGFloat = 0
     let headerSize: CGFloat = 0
     
@@ -40,10 +40,9 @@ struct ContentView: View {
     @State private var showLogoPanel = false
     @State private var showFiltersPanel = false
     
-    var body: some View {
+    var panels: some View {
         ZStack {
-            HStack(alignment: .top, spacing: 0) {
-                // Left panel
+            if leftInset > 0 {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach([
                         ("figure.hiking", "Hiking"),
@@ -73,10 +72,9 @@ struct ContentView: View {
                 .padding(.top, 60)
                 .padding(.leading, 12)
                 .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
+            }
 
-                Spacer()
-
-                // Right panel
+            if rightInset > 0 {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Start date").font(.subheadline)
@@ -98,11 +96,46 @@ struct ContentView: View {
                     }
                     .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
                 }
-                .padding(20)
-                .frame(width: UIScreen.main.bounds.width * maxPanelWidthPercentage)
             }
-            .ignoresSafeArea()
+        }
+    }
+    
+    @ViewBuilder
+    var mapButton: some View {
+        GeometryReader { geometry in
+            let maxInset = UIScreen.main.bounds.width * maxPanelWidthPercentage
+            let isFullyOpen = leftInset == maxInset || rightInset == maxInset
 
+            ZStack {
+                Button(action: {
+                    withAnimation {
+                        leftInset = 0
+                        rightInset = 0
+                        triggerHaptic()
+                    }
+                }) {
+                    Text("Map")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.black.opacity(0.8))
+                        .clipShape(Capsule())
+                }
+                .contentShape(Rectangle())
+                .zIndex(10)
+                .allowsHitTesting(isFullyOpen)
+                .opacity(isFullyOpen ? 1 : 0)
+                .animation(.easeInOut(duration: 0.3), value: isFullyOpen)
+            }
+            .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
+        }
+    }
+    
+    var body: some View {
+        ZStack {
+            panels
+            
             
 
             ZStack {
@@ -257,6 +290,7 @@ struct ContentView: View {
                 Spacer()
             }
             
+            mapButton
         }
     }
     
