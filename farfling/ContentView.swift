@@ -14,7 +14,7 @@ struct ContentView: View {
     }
     
     let hitAreaWidth: CGFloat = 40
-    let maxPanelWidthPercentage: CGFloat = 0.45
+    let maxPanelWidthPercentage: CGFloat = 0.475
     let borderSize: CGFloat = 8
     let headerSize: CGFloat = 0
     
@@ -86,12 +86,8 @@ struct ContentView: View {
             )
             let holePath = Path(roundedRect: holeRect, cornerRadius: 47.28)
             
-            
-            
-            
             ZStack(alignment: .top) {
-                Rectangle()
-                    .fill(Color(hex: "#CFCFCF"))
+                VisualEffectBlur(blurStyle: .systemMaterial)
                     .frame(height: geometry.size.height * 1.5)
                     .frame(maxWidth: .infinity)
                 Capsule()
@@ -247,9 +243,10 @@ struct ContentView: View {
                         Spacer()
                     }
                     Rectangle()
-                        .fill(Color.black.opacity(0.5))
-                        .frame(height: 1)
+                        .fill(Color.white.opacity(0.5))
+                        .frame(height: 2)
                         .frame(maxWidth: .infinity)
+//                        .shadow(radius: 3)
                 }
             }
             .frame(height: headerSize)
