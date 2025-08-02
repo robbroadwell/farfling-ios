@@ -2,7 +2,12 @@ import SwiftUI
 import MapKit
 import UIKit
 
+enum BottomTab: String {
+    case activities, filters, dates, results, settings
+}
+
 struct ContentView: View {
+    let tabIconSize: CGFloat = 22
     @Environment(\.colorScheme) private var colorScheme
     var darkMode: Bool {
         colorScheme == .dark
@@ -38,6 +43,7 @@ struct ContentView: View {
     @State private var showTopSearchPanel = false
     @State private var showLogoPanel = false
     @State private var showFiltersPanel = false
+    @State private var activeBottomTab: BottomTab? = nil
     
     var panels: some View {
         ZStack {
@@ -216,19 +222,19 @@ struct ContentView: View {
                                         .aspectRatio(contentMode: .fit)
                                         .frame(height: 25)
                                         .foregroundColor(darkMode ? Color.white : Color.black)
-                                    VStack {
-                                        HStack {
-                                            Spacer()
-                                            Text("1")
-                                                .font(.caption2)
-                                                .foregroundColor(.white)
-                                                .padding(6)
-                                                .background(Color.red)
-                                                .clipShape(Circle())
-                                                .offset(x: 6, y: -6)
-                                        }
-                                        Spacer()
-                                    }
+//                                    VStack {
+//                                        HStack {
+//                                            Spacer()
+//                                            Text("1")
+//                                                .font(.caption2)
+//                                                .foregroundColor(.white)
+//                                                .padding(6)
+//                                                .background(Color.red)
+//                                                .clipShape(Circle())
+//                                                .offset(x: 6, y: -6)
+//                                        }
+//                                        Spacer()
+//                                    }
                                 }
                                 .frame(width: 30, height: 30)
                             }
@@ -249,7 +255,6 @@ struct ContentView: View {
                 Spacer()
             }
             .padding(.top, 50)
-            
         }
         .ignoresSafeArea()
     }
@@ -313,9 +318,9 @@ struct ContentView: View {
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
             }
-            .offset(y: showBottomDrawer ? 0 : 100)
+            .offset(y: showBottomDrawer ? 0 : 140)
             .animation(.easeInOut(duration: 0.3), value: showBottomDrawer)
-            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.675) - bottomInset)
+            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height + (geometry.size.height * 0.60) - bottomInset)
             .animation(.easeInOut(duration: 0.3), value: leftInset)
             .animation(.easeInOut(duration: 0.3), value: rightInset)
             .animation(.easeInOut(duration: 0.3), value: bottomInset)
@@ -372,7 +377,7 @@ struct ContentView: View {
                         .background(Color.black.opacity(0.8))
                         .clipShape(Capsule())
                 }
-                .position(x: geometry.size.width / 2, y: geometry.size.height - 60)
+                .position(x: geometry.size.width / 2, y: geometry.size.height - 130)
             }
 
             if showTopSearchPanel {
@@ -498,6 +503,137 @@ struct ContentView: View {
             let maxInset = geometry.size.width * maxPanelWidthPercentage
             let dimmingOpacity = max(leftInset, rightInset) / maxInset
 
+            
+            
+            // --- Begin Custom Bottom Tab Bar ---
+            VStack {
+                Spacer()
+                ZStack {
+                    VisualEffectBlur(blurStyle: .systemUltraThinMaterial)
+                        .frame(height: 90)
+                        .background(Color.clear)
+                        .overlay(
+                            HStack {
+                                Spacer()
+                                // Results tab (now styled like others, with "house" icon)
+                                ZStack {
+                                    if activeBottomTab == .results {
+                                        Color.white
+                                            .cornerRadius(12)
+                                    } else {
+                                        Color.clear
+                                    }
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: tabIconSize, weight: .bold))
+                                        .foregroundColor(activeBottomTab == .results ? .black : (darkMode ? .white : .black))
+                                }
+                                .frame(width: 70, height: 70)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    withAnimation {
+                                        activeBottomTab = (activeBottomTab == .results) ? nil : .results
+                                    }
+                                }
+                                Spacer()
+                                // Activities
+                                ZStack {
+                                    if activeBottomTab == .activities {
+                                        Color.white
+                                            .cornerRadius(12)
+                                    } else {
+                                        Color.clear
+                                    }
+                                    Image(systemName: "calendar")
+                                        .font(.system(size: tabIconSize, weight: .bold))
+                                        .foregroundColor(activeBottomTab == .activities ? .black : (darkMode ? .white : .black))
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .frame(width: 70, height: 70)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    activeBottomTab = (activeBottomTab == .activities) ? nil : .activities
+                                }
+                                Spacer()
+//                                // Filters
+//                                ZStack {
+//                                    if activeBottomTab == .filters {
+//                                        Color.white
+//                                            .cornerRadius(12)
+//                                    } else {
+//                                        Color.clear
+//                                    }
+//                                    Group {
+//                                        if isMapMoving {
+//                                            ProgressView()
+//                                                .progressViewStyle(CircularProgressViewStyle(tint: activeBottomTab == .filters ? .black : .white))
+//                                                .scaleEffect(0.8)
+//                                        } else {
+//                                            ZStack {
+//                                                Circle()
+//                                                    .fill(activeBottomTab == .filters ? Color.white : Color.white.opacity(0.2))
+//                                                    .frame(width: 52, height: 52)
+//                                                Text("\(Int.random(in: 1...10))")
+//                                                    .font(.system(size: 16, weight: .bold))
+//                                                    .foregroundColor(activeBottomTab == .filters ? .black : .white)
+//                                            }
+//                                        }
+//                                    }
+//                                    .frame(maxWidth: .infinity)
+//                                }
+//                                .frame(width: 70, height: 70)
+//                                .contentShape(Rectangle())
+//                                .onTapGesture {
+//                                    activeBottomTab = (activeBottomTab == .filters) ? nil : .filters
+//                                }
+//                                Spacer()
+                                // Dates
+                                ZStack {
+                                    if activeBottomTab == .dates {
+                                        Color.white
+                                            .cornerRadius(12)
+                                    } else {
+                                        Color.clear
+                                    }
+                                    Image(systemName: "slider.horizontal.3")
+                                        .font(.system(size: tabIconSize, weight: .bold))
+                                        .foregroundColor(activeBottomTab == .dates ? .black : (darkMode ? .white : .black))
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .frame(width: 70, height: 70)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    activeBottomTab = (activeBottomTab == .dates) ? nil : .dates
+                                }
+                                Spacer()
+                                // Settings
+                                ZStack {
+                                    if activeBottomTab == .settings {
+                                        Color.white
+                                            .cornerRadius(12)
+                                    } else {
+                                        Color.clear
+                                    }
+                                    Image(systemName: "plus")
+                                        .font(.system(size: tabIconSize, weight: .bold))
+                                        .foregroundColor(activeBottomTab == .settings ? .black : (darkMode ? .white : .black))
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .frame(width: 70, height: 70)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    activeBottomTab = (activeBottomTab == .settings) ? nil : .settings
+                                }
+                                Spacer()
+                            }
+                            .padding(.bottom, 20)
+                        )
+                }
+                .frame(height: 90)
+                .ignoresSafeArea(edges: .bottom)
+            }
+            .ignoresSafeArea(.keyboard)
+            // --- End Custom Bottom Tab Bar ---
+            
             ZStack {
                 Color.black.opacity(0.8 * dimmingOpacity)
                     .ignoresSafeArea()
@@ -514,7 +650,7 @@ struct ContentView: View {
             .allowsHitTesting(leftInset > 0 || rightInset > 0)
             // End overlay dimming and blur
             
-
+            
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(borderColor))
                 context.blendMode = .destinationOut
@@ -596,6 +732,8 @@ struct ContentView: View {
                 )
                 .frame(maxHeight: .infinity)
                 .position(x: geometry.size.width, y: geometry.size.height / 2)
+            
+            
         }
         .ignoresSafeArea()
     }
