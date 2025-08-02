@@ -131,14 +131,13 @@ struct ContentView: View {
                         .edgesIgnoringSafeArea(.top)
                     VStack {
                         HStack {
-                            Spacer()
                             Button(action: {
                                 withAnimation {
                                     leftInset = UIScreen.main.bounds.width * maxPanelWidthPercentage
                                 }
                             }) {
                                 ZStack {
-                                    Image(systemName: "magnifyingglass")
+                                    Image(systemName: "bell")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(height: 25)
@@ -159,29 +158,27 @@ struct ContentView: View {
                                 }
                                 .frame(width: 30, height: 30)
                             }
-                            Spacer()
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    let willOpen = !showTopSearchPanel
-                                    showTopSearchPanel = willOpen
-                                    showLogoPanel = false
-                                    showFiltersPanel = false
-                                    showBottomDrawer = !willOpen
-                                }
-                            }) {
-                                Image(systemName: "person.crop.circle")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: 25)
-                                    .foregroundColor(darkMode ? Color.white : Color.black)
-                            }
+//                            Button(action: {
+//                                withAnimation(.easeInOut(duration: 0.3)) {
+//                                    let willOpen = !showTopSearchPanel
+//                                    showTopSearchPanel = willOpen
+//                                    showLogoPanel = false
+//                                    showFiltersPanel = false
+//                                    showBottomDrawer = !willOpen
+//                                }
+//                            }) {
+//                                Image(systemName: "person.crop.circle")
+//                                    .resizable()
+//                                    .aspectRatio(contentMode: .fit)
+//                                    .frame(height: 25)
+//                                    .foregroundColor(darkMode ? Color.white : Color.black)
+//                            }
                             Spacer()
                             Image("Logo")
                                 .renderingMode(.template)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 30)
-                                .padding(.top, 5)
+                                .frame(height: 40)
                                 .foregroundColor(darkMode ? Color.white : Color.black)
                                 .onTapGesture {
                                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -193,29 +190,28 @@ struct ContentView: View {
                                     }
                                 }
                             Spacer()
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    let willOpen = !showFiltersPanel
-                                    showFiltersPanel = willOpen
-                                    showLogoPanel = false
-                                    showTopSearchPanel = false
-                                    showBottomDrawer = !(willOpen)
-                                }
-                            }) {
-                                Image(systemName: "bell")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: 25)
-                                    .foregroundColor(darkMode ? Color.white : Color.black)
-                            }
-                            Spacer()
+//                            Button(action: {
+//                                withAnimation(.easeInOut(duration: 0.3)) {
+//                                    let willOpen = !showFiltersPanel
+//                                    showFiltersPanel = willOpen
+//                                    showLogoPanel = false
+//                                    showTopSearchPanel = false
+//                                    showBottomDrawer = !(willOpen)
+//                                }
+//                            }) {
+//                                Image(systemName: "magnifyingglass")
+//                                    .resizable()
+//                                    .aspectRatio(contentMode: .fit)
+//                                    .frame(height: 25)
+//                                    .foregroundColor(darkMode ? Color.white : Color.black)
+//                            }
                             Button(action: {
                                 withAnimation {
                                     rightInset = UIScreen.main.bounds.width * maxPanelWidthPercentage
                                 }
                             }) {
                                 ZStack {
-                                    Image(systemName: "slider.horizontal.3")
+                                    Image(systemName: "person.crop.circle")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(height: 25)
@@ -236,8 +232,9 @@ struct ContentView: View {
                                 }
                                 .frame(width: 30, height: 30)
                             }
-                            Spacer()
                         }
+                            .padding(.horizontal)
+                        
                         Rectangle()
                             .fill(borderColor)
                             .frame(height: 2)
@@ -643,10 +640,13 @@ extension ContentView {
     }
 }
 
+import SwiftUI
+
 struct AnimatedHoleMask: Shape {
     var leftInset: CGFloat
     var rightInset: CGFloat
 
+    // Flat animatable pair — safe and clean
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { AnimatablePair(leftInset, rightInset) }
         set {
@@ -662,8 +662,9 @@ struct AnimatedHoleMask: Shape {
             width: rect.width - leftInset - rightInset,
             height: rect.height
         )
+
         var path = Path()
-        path.addRect(holeRect)
+        path.addRoundedRect(in: holeRect, cornerSize: CGSize(width: 20, height: 20))
         return path
     }
 }
