@@ -9,10 +9,6 @@ import SwiftUI
 
 @main
 struct farflingApp: App {
-    init() {
-        UIView.appearance().overrideUserInterfaceStyle = .dark
-    }
-    
     var body: some Scene {
         WindowGroup {
             ContentView()
