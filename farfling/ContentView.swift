@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var isMapVisible: Bool = true
     @State private var redOffsetX: CGFloat = 0.0
     @State private var purpleOffsetX: CGFloat = UIScreen.main.bounds.width
     @State private var yellowOffsetX: CGFloat = -UIScreen.main.bounds.width
@@ -14,6 +15,7 @@ struct ContentView: View {
             (yellowOffsetX + UIScreen.main.bounds.width) / UIScreen.main.bounds.width
         )
     }
+    
 
     var body: some View {
         
@@ -83,28 +85,22 @@ struct ContentView: View {
             
             // green swipe area
             HStack {
-                Color.green
-                    .frame(width: 20)
-                
-                Spacer()
-                
-                Color.green
-                    .frame(width: 20)
+                if isMapVisible {
+                    Color.green
+                        .frame(width: 20)
+                    
+                    Spacer() // let the map be swipable
+                    
+                    Color.green
+                        .frame(width: 20)
+                } else {
+                    Color.white.opacity(0.001)
+                }
             }
             .ignoresSafeArea()
             .gesture(
                 DragGesture()
                     .onChanged { value in
-//                        print("dragStartYellowOffsetX | \(dragStartYellowOffsetX)")
-//                        print("dragStartRedOffsetX | \(dragStartRedOffsetX)")
-//                        print("dragStartPurpleOffsetX | \(dragStartPurpleOffsetX)")
-//
-//                        if yellowOffsetX == 0 {
-//                            // yellow is open
-//                            print("yellowOffsetX == 0")
-//                            return
-//                        }
-                        
                         if dragStartYellowOffsetX == nil {
                             dragStartYellowOffsetX = yellowOffsetX
                         }
@@ -137,7 +133,7 @@ struct ContentView: View {
                         dragStartYellowOffsetX = nil
                         dragStartRedOffsetX = nil
                         dragStartPurpleOffsetX = nil
-                        
+                                                
                         let predictedTranslation = value.predictedEndTranslation.width
                         let threshold: CGFloat = UIScreen.main.bounds.width / 2
 
@@ -148,10 +144,12 @@ struct ContentView: View {
                                     print("Swiping left - close yellow")
                                     yellowOffsetX = -UIScreen.main.bounds.width
                                     redOffsetX = 0.0
+                                    isMapVisible = true
                                 } else {
                                     print("Swiping right - open yellow")
                                     yellowOffsetX = 0
                                     redOffsetX = UIScreen.main.bounds.width * 0.5
+                                    isMapVisible = false
                                 }
                             }
                             
@@ -160,10 +158,12 @@ struct ContentView: View {
                                     print("Swiping right - close purple")
                                     purpleOffsetX = UIScreen.main.bounds.width
                                     redOffsetX = 0.0
+                                    isMapVisible = true
                                 } else {
                                     print("Swiping left - open purple")
                                     purpleOffsetX = 0
                                     redOffsetX = -UIScreen.main.bounds.width * 0.5
+                                    isMapVisible = false
                                 }
                             }
                         }
