@@ -29,13 +29,13 @@ struct ContentView: View {
                     // header
                     VStack {
                         Color.blue
-                            .frame(height: 50)
+                            .frame(height: 65)
                         Spacer()
                     }
                     
                     Color.black
                         .opacity(
-                            percentageDrawerIsOpen * 0.5
+                            percentageDrawerIsOpen * 0.7
                         )
                         .ignoresSafeArea()
                 }
@@ -45,6 +45,9 @@ struct ContentView: View {
             // chat screen
             ZStack {
                 Color.purple
+                    .mask(
+                        RoundedRectangle(cornerRadius: 47.28, style: .continuous)
+                    )
                     .ignoresSafeArea()
 
                 // footer
@@ -57,10 +60,15 @@ struct ContentView: View {
             .offset(x: purpleOffsetX)
             
             
+            
             // account screen
             ZStack {
                 Color.yellow
+                    .mask(
+                        RoundedRectangle(cornerRadius: 47.28, style: .continuous)
+                    )
                     .ignoresSafeArea()
+                    
                 
                 // footer
                 VStack {
@@ -70,6 +78,7 @@ struct ContentView: View {
                 }
             }
             .offset(x: yellowOffsetX)
+            
             
             
             // green swipe area
@@ -89,7 +98,7 @@ struct ContentView: View {
 //                        print("dragStartYellowOffsetX | \(dragStartYellowOffsetX)")
 //                        print("dragStartRedOffsetX | \(dragStartRedOffsetX)")
 //                        print("dragStartPurpleOffsetX | \(dragStartPurpleOffsetX)")
-//                        
+//
 //                        if yellowOffsetX == 0 {
 //                            // yellow is open
 //                            print("yellowOffsetX == 0")
