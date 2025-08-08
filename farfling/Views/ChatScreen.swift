@@ -14,6 +14,69 @@ struct RoundedCorner: Shape {
     }
 }
 
+struct ActivityListColumn: View {
+    @Binding var selectedActivity: ChatScreen.Activity?
+    let indexedActivities: [ChatScreen.IndexedActivity]
+
+    var drawerSize: CGFloat {
+        screen.width * 3/8
+    }
+
+    var body: some View {
+        HStack {
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(spacing: 0) {
+                        ForEach(indexedActivities) { item in
+                            Button(action: {
+                                selectedActivity = item.activity
+                            }) {
+                                ZStack(alignment: .bottom) {
+                                    Image(item.activity.imageName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: drawerSize, height: drawerSize)
+                                        .clipped()
+                                        .overlay(
+                                            selectedActivity == item.activity
+                                            ? Color.clear
+                                            : Color.black.opacity(0.3)
+                                        )
+                                    VStack(spacing: 2) {
+                                        Text(item.activity.name)
+                                            .font(.caption2)
+                                            .foregroundColor(.white)
+                                        Text(item.activity.location)
+                                            .font(.caption2)
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                    .padding(4)
+                                    .background(Color.black.opacity(0.4))
+                                    .frame(maxHeight: .infinity)
+                                }
+                                .frame(width: drawerSize, height: drawerSize)
+                            }
+                            .frame(height: drawerSize)
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+                .onAppear {
+                    let middleIndex = indexedActivities.count / 2
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(middleIndex, anchor: .top)
+                    }
+                }
+            }
+            .frame(width: drawerSize)
+            .background(Color.clear)
+            .contentShape(Rectangle())
+            Spacer()
+        }
+        .padding(.bottom, 31 + insets.bottom)
+    }
+}
+
 struct ChatScreen: View {
     @Binding var yellowOffsetX: CGFloat
     
@@ -79,98 +142,12 @@ struct ChatScreen: View {
                 )
                 .ignoresSafeArea()
             
-            HStack {
-                ScrollViewReader { proxy in
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(spacing: 0) {
-                            ForEach(indexedActivities) { item in
-                                Button(action: {
-                                    selectedActivity = item.activity
-                                }) {
-                                    ZStack(alignment: .bottom) {
-                                        Image(item.activity.imageName)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: screen.width / 4, height: screen.width / 4)
-                                            .clipped()
-                                            .overlay(
-                                                selectedActivity == item.activity
-                                                ? Color.clear
-                                                : Color.black.opacity(0.3)
-                                            )
-                                        VStack(spacing: 2) {
-                                            Text(item.activity.name)
-                                                .font(.caption2)
-                                                .foregroundColor(.white)
-                                            Text(item.activity.location)
-                                                .font(.caption2)
-                                                .foregroundColor(.white.opacity(0.8))
-                                        }
-                                        .padding(4)
-                                        .background(Color.black.opacity(0.4))
-                                        .frame(maxHeight: .infinity)
-                                    }
-                                    .frame(width: screen.width / 4, height: screen.width / 4)
-                                }
-                                .frame(height: screen.width / 4)
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                    }
-                    .onAppear {
-                        let middleIndex = indexedActivities.count / 2
-                        DispatchQueue.main.async {
-                            proxy.scrollTo(middleIndex, anchor: .top)
-                        }
-                    }
-                }
-                .frame(width: screen.width / 4)
-                .background(Color.clear)
-                .contentShape(Rectangle())
-                Spacer()
-            }
-            .padding(.bottom, 31 + insets.bottom)
+            ActivityListColumn(
+                selectedActivity: $selectedActivity,
+                indexedActivities: indexedActivities
+            )
             
-            // footer
-            VStack {
-                Spacer()
-
-                ZStack {
-                    HStack(spacing: 0) {
-                        ForEach(Tab.all, id: \.id) { tab in
-                            (tab == selectedTab ? Color.white.opacity(0.2) : Color.clear)
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .frame(height: 70 + insets.bottom)
-                    .background(Color.cyan)
-                    .mask(
-                        RoundedCorner(radius: 47.28, corners: [.bottomLeft, .bottomRight])
-                    )
-
-                    HStack {
-                        ForEach(Tab.all, id: \.id) { tab in
-                            Button(action: {
-                                selectedTab = tab
-                            }) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: tab.icon)
-                                        .font(.system(size: 20))
-                                    Text(tab.name)
-                                        .font(.caption2)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .foregroundColor(.white)
-                            }
-                        }
-                    }
-                    .frame(height: 65)
-                    .padding(.bottom, insets.bottom)
-                    .padding(.top, 5)
-                }
-                .smallShadow()
-            }
-            .ignoresSafeArea()
+            ChatTabBar(selectedTab: $selectedTab)
         }
         .offset(x: yellowOffsetX)
         .standardShadow()
@@ -180,5 +157,51 @@ struct ChatScreen: View {
 #Preview {
     StatefulPreviewWrapper(0.0) { binding in
         ChatScreen(yellowOffsetX: binding)
+    }
+}
+
+struct ChatTabBar: View {
+    @Binding var selectedTab: ChatScreen.Tab
+
+    var body: some View {
+        VStack {
+            Spacer()
+
+            ZStack {
+                HStack(spacing: 0) {
+                    ForEach(ChatScreen.Tab.all, id: \.id) { tab in
+                        (tab == selectedTab ? Color.white.opacity(0.2) : Color.clear)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .frame(height: 70 + insets.bottom)
+                .background(Color.cyan)
+                .mask(
+                    RoundedCorner(radius: 47.28, corners: [.bottomLeft, .bottomRight])
+                )
+
+                HStack {
+                    ForEach(ChatScreen.Tab.all, id: \.id) { tab in
+                        Button(action: {
+                            selectedTab = tab
+                        }) {
+                            VStack(spacing: 4) {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 20))
+                                Text(tab.name)
+                                    .font(.caption2)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                        }
+                    }
+                }
+                .frame(height: 65)
+                .padding(.bottom, insets.bottom)
+                .padding(.top, 5)
+            }
+            .smallShadow()
+        }
+        .ignoresSafeArea()
     }
 }
