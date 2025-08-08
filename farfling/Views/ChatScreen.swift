@@ -16,10 +16,48 @@ struct RoundedCorner: Shape {
 
 struct ChatScreen: View {
     @Binding var yellowOffsetX: CGFloat
-    enum Tab: Int, CaseIterable {
-        case one = 0, two, three, four, five
+    
+    struct Activity: Identifiable, Equatable {
+        let id = UUID()
+        let name: String
+        let location: String
+        let imageName: String
+
+        static let sample: [Activity] = [
+            Activity(name: "Kitesurf", location: "Tarifa", imageName: "kitesurf"),
+            Activity(name: "Yoga", location: "Bali", imageName: "yoga"),
+            Activity(name: "Hiking", location: "Patagonia", imageName: "hiking"),
+            Activity(name: "Surf", location: "Oahu", imageName: "surf"),
+            Activity(name: "Scuba", location: "Belize", imageName: "scuba"),
+            Activity(name: "Climb", location: "Yosemite", imageName: "climb"),
+            Activity(name: "Ski", location: "Zermatt", imageName: "ski"),
+            Activity(name: "Sail", location: "Santorini", imageName: "sail"),
+            Activity(name: "Run", location: "Chamonix", imageName: "run"),
+            Activity(name: "Camp", location: "Banff", imageName: "camp"),
+            Activity(name: "Fish", location: "Alaska", imageName: "fish"),
+            Activity(name: "Bike", location: "Amsterdam", imageName: "bike"),
+            Activity(name: "Kayak", location: "Norway", imageName: "kayak"),
+            Activity(name: "Skate", location: "Venice", imageName: "skate"),
+            Activity(name: "Dance", location: "Havana", imageName: "dance"),
+        ]
     }
-    @State private var selectedTab: Tab = .one
+    
+    @State private var selectedActivity: Activity? = nil
+    
+    struct Tab: Identifiable, Equatable {
+        let id: Int
+        let icon: String
+        let name: String
+
+        static let all: [Tab] = [
+            Tab(id: 0, icon: "bubble.left.and.bubble.right", name: "Chat"),
+            Tab(id: 1, icon: "doc.text.magnifyingglass", name: "Details"),
+            Tab(id: 2, icon: "person.3", name: "Members"),
+            Tab(id: 3, icon: "photo", name: "Photos"),
+            Tab(id: 4, icon: "gear", name: "Settings"),
+        ]
+    }
+    @State private var selectedTab: Tab = Tab.all[0]
 
     var body: some View {
         ZStack {
@@ -32,23 +70,43 @@ struct ChatScreen: View {
             HStack {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
-                        ForEach(0..<15) { index in
-                            ZStack(alignment: .bottom) {
-                                Color.gray
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .frame(height: 1)
-                                    .frame(maxWidth: .infinity)
-                                    .alignmentGuide(.bottom) { d in d[.bottom] }
+                        ForEach(Activity.sample) { activity in
+                            Button(action: {
+                                selectedActivity = activity
+                            }) {
+                                ZStack(alignment: .bottom) {
+                                    Image(activity.imageName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: screen.width / 5, height: screen.width / 5)
+                                        .clipped()
+                                        .overlay(
+                                            selectedActivity == activity
+                                            ? Color.clear
+                                            : Color.black.opacity(0.3)
+                                        )
+                                    VStack(spacing: 2) {
+                                        Text(activity.name)
+                                            .font(.caption2)
+                                            .foregroundColor(.white)
+                                        Text(activity.location)
+                                            .font(.caption2)
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                    .padding(4)
+                                    .background(Color.black.opacity(0.4))
+                                    .frame(maxHeight: .infinity)
+                                }
+                                .frame(width: screen.width / 5, height: screen.width / 5)
                             }
-                            .frame(width: screen.width / 5, height: screen.width / 5)
+                            .frame(height: screen.width / 5)
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
                 .frame(width: screen.width / 5)
                 .background(Color.clear)
                 .contentShape(Rectangle())
-                .animation(.spring(response: 0.5, dampingFraction: 0.75, blendDuration: 1), value: UUID())
                 Spacer()
             }
             .padding(.bottom, 31 + insets.bottom)
@@ -59,7 +117,7 @@ struct ChatScreen: View {
 
                 ZStack {
                     HStack(spacing: 0) {
-                        ForEach(Tab.allCases, id: \.self) { tab in
+                        ForEach(Tab.all, id: \.id) { tab in
                             (tab == selectedTab ? Color.white.opacity(0.2) : Color.clear)
                                 .frame(maxWidth: .infinity)
                         }
@@ -71,14 +129,14 @@ struct ChatScreen: View {
                     )
 
                     HStack {
-                        ForEach(Tab.allCases, id: \.self) { tab in
+                        ForEach(Tab.all, id: \.id) { tab in
                             Button(action: {
                                 selectedTab = tab
                             }) {
                                 VStack(spacing: 4) {
-                                    Image(systemName: "star")
+                                    Image(systemName: tab.icon)
                                         .font(.system(size: 20))
-                                    Text("Tab \(tab.rawValue + 1)")
+                                    Text(tab.name)
                                         .font(.caption2)
                                 }
                                 .frame(maxWidth: .infinity)

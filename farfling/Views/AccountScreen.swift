@@ -1,10 +1,20 @@
 import SwiftUI
 
 struct AccountScreen: View {
-    enum Tab: Int, CaseIterable {
-        case one = 0, two, three, four, five
+    struct Tab: Identifiable, Equatable {
+        let id: Int
+        let icon: String
+        let name: String
+
+        static let all: [Tab] = [
+            Tab(id: 0, icon: "person.crop.circle", name: "Profile"),
+            Tab(id: 1, icon: "star.circle", name: "Badges"),
+            Tab(id: 2, icon: "photo.on.rectangle", name: "Photos"),
+            Tab(id: 3, icon: "bell.circle", name: "Notifications"),
+            Tab(id: 4, icon: "gearshape", name: "Settings"),
+        ]
     }
-    @State private var selectedTab: Tab = .one
+    @State private var selectedTab: Tab = Tab.all[0]
     @Binding var purpleOffsetX: CGFloat
 
     var body: some View {
@@ -21,7 +31,7 @@ struct AccountScreen: View {
 
                 ZStack {
                     HStack(spacing: 0) {
-                        ForEach(Tab.allCases, id: \.self) { tab in
+                        ForEach(Tab.all, id: \.id) { tab in
                             (tab == selectedTab ? Color.white.opacity(0.2) : Color.clear)
                                 .frame(maxWidth: .infinity)
                         }
@@ -33,14 +43,14 @@ struct AccountScreen: View {
                     )
 
                     HStack {
-                        ForEach(Tab.allCases, id: \.self) { tab in
+                        ForEach(Tab.all, id: \.id) { tab in
                             Button(action: {
                                 selectedTab = tab
                             }) {
                                 VStack(spacing: 4) {
-                                    Image(systemName: "star")
+                                    Image(systemName: tab.icon)
                                         .font(.system(size: 20))
-                                    Text("Tab \(tab.rawValue + 1)")
+                                    Text(tab.name)
                                         .font(.caption2)
                                 }
                                 .frame(maxWidth: .infinity)
