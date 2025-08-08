@@ -57,9 +57,9 @@ struct AccountScreen: View {
                             }
                         }
                     }
-                    .frame(height: 65)
+                    .frame(height: 55)
                     .padding(.bottom, insets.bottom)
-                    .padding(.top, 5)
+                    .padding(.top, 15)
                 }
             }
             .ignoresSafeArea()

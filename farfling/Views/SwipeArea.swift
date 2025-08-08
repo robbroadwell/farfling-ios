@@ -16,14 +16,14 @@ struct SwipeArea: View {
     var body: some View {
         HStack {
             if !isYellowVisible {
-                Color.green
+                Color.white.opacity(0.001)
                     .frame(width: 20)
             }
             
             Spacer()
             
             if !isPurpleVisible {
-                Color.green
+                Color.white.opacity(0.001)
                     .frame(width: 20)
             }
         }
