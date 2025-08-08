@@ -42,6 +42,19 @@ struct ChatScreen: View {
         ]
     }
     
+    struct IndexedActivity: Identifiable {
+        let id: Int
+        let activity: Activity
+    }
+    
+    var indexedActivities: [IndexedActivity] {
+        let repeatedCount = 1000
+        let base = Activity.sample
+        return (0..<(base.count * repeatedCount)).map { i in
+            IndexedActivity(id: i, activity: base[i % base.count])
+        }
+    }
+    
     @State private var selectedActivity: Activity? = nil
     
     struct Tab: Identifiable, Equatable {
@@ -67,39 +80,47 @@ struct ChatScreen: View {
                 .ignoresSafeArea()
             
             HStack {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        ForEach(Activity.sample) { activity in
-                            Button(action: {
-                                selectedActivity = activity
-                            }) {
-                                ZStack(alignment: .bottom) {
-                                    Image(activity.imageName)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: screen.width / 4, height: screen.width / 4)
-                                        .clipped()
-                                        .overlay(
-                                            selectedActivity == activity
-                                            ? Color.clear
-                                            : Color.black.opacity(0.3)
-                                        )
-                                    VStack(spacing: 2) {
-                                        Text(activity.name)
-                                            .font(.caption2)
-                                            .foregroundColor(.white)
-                                        Text(activity.location)
-                                            .font(.caption2)
-                                            .foregroundColor(.white.opacity(0.8))
+                ScrollViewReader { proxy in
+                    ScrollView(.vertical, showsIndicators: false) {
+                        LazyVStack(spacing: 0) {
+                            ForEach(indexedActivities) { item in
+                                Button(action: {
+                                    selectedActivity = item.activity
+                                }) {
+                                    ZStack(alignment: .bottom) {
+                                        Image(item.activity.imageName)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: screen.width / 4, height: screen.width / 4)
+                                            .clipped()
+                                            .overlay(
+                                                selectedActivity == item.activity
+                                                ? Color.clear
+                                                : Color.black.opacity(0.3)
+                                            )
+                                        VStack(spacing: 2) {
+                                            Text(item.activity.name)
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                            Text(item.activity.location)
+                                                .font(.caption2)
+                                                .foregroundColor(.white.opacity(0.8))
+                                        }
+                                        .padding(4)
+                                        .background(Color.black.opacity(0.4))
+                                        .frame(maxHeight: .infinity)
                                     }
-                                    .padding(4)
-                                    .background(Color.black.opacity(0.4))
-                                    .frame(maxHeight: .infinity)
+                                    .frame(width: screen.width / 4, height: screen.width / 4)
                                 }
-                                .frame(width: screen.width / 4, height: screen.width / 4)
+                                .frame(height: screen.width / 4)
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .frame(height: screen.width / 4)
-                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .onAppear {
+                        let middleIndex = indexedActivities.count / 2
+                        DispatchQueue.main.async {
+                            proxy.scrollTo(middleIndex, anchor: .top)
                         }
                     }
                 }
