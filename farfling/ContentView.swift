@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isMapVisible: Bool = true
+    @State private var isYellowVisible: Bool = false
+    @State private var isPurpleVisible: Bool = false
     @State private var redOffsetX: CGFloat = 0.0
     @State private var purpleOffsetX: CGFloat = screen.width
     @State private var yellowOffsetX: CGFloat = -screen.width
@@ -29,7 +31,9 @@ struct ContentView: View {
                 redOffsetX: $redOffsetX,
                 yellowOffsetX: $yellowOffsetX,
                 purpleOffsetX: $purpleOffsetX,
-                isMapVisible: $isMapVisible
+                isMapVisible: $isMapVisible,
+                isYellowVisible: $isYellowVisible,
+                isPurpleVisible: $isPurpleVisible
             )
         }
     }

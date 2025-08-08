@@ -4,7 +4,10 @@ struct SwipeArea: View {
     @Binding var redOffsetX: CGFloat
     @Binding var yellowOffsetX: CGFloat
     @Binding var purpleOffsetX: CGFloat
+    
     @Binding var isMapVisible: Bool
+    @Binding var isYellowVisible: Bool
+    @Binding var isPurpleVisible: Bool
 
     @State private var dragStartYellowOffsetX: CGFloat? = nil
     @State private var dragStartRedOffsetX: CGFloat? = nil
@@ -12,14 +15,16 @@ struct SwipeArea: View {
 
     var body: some View {
         HStack {
-            if isMapVisible {
+            if !isYellowVisible {
                 Color.green
                     .frame(width: 20)
-                Spacer()
+            }
+            
+            Spacer()
+            
+            if !isPurpleVisible {
                 Color.green
                     .frame(width: 20)
-            } else {
-                Color.white.opacity(0.001)
             }
         }
         .ignoresSafeArea()
@@ -62,10 +67,15 @@ struct SwipeArea: View {
                                 yellowOffsetX = -screen.width
                                 redOffsetX = 0.0
                                 isMapVisible = true
+                                isYellowVisible = false
+                                isPurpleVisible = false
+                                
                             } else {
                                 yellowOffsetX = 0
                                 redOffsetX = screen.width * 0.5
                                 isMapVisible = false
+                                isYellowVisible = true
+                                isPurpleVisible = false
                             }
                         }
 
@@ -74,10 +84,15 @@ struct SwipeArea: View {
                                 purpleOffsetX = screen.width
                                 redOffsetX = 0.0
                                 isMapVisible = true
+                                isYellowVisible = false
+                                isPurpleVisible = false
+                                
                             } else {
                                 purpleOffsetX = 0
                                 redOffsetX = -screen.width * 0.5
                                 isMapVisible = false
+                                isYellowVisible = false
+                                isPurpleVisible = true
                             }
                         }
                     }
