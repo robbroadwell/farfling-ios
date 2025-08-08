@@ -41,11 +41,11 @@ struct ChatScreen: View {
                                     .frame(maxWidth: .infinity)
                                     .alignmentGuide(.bottom) { d in d[.bottom] }
                             }
-                            .frame(width: 75, height: 75)
+                            .frame(width: screen.width / 5, height: screen.width / 5)
                         }
                     }
                 }
-                .frame(width: 75)
+                .frame(width: screen.width / 5)
                 .background(Color.clear)
                 .contentShape(Rectangle())
                 .animation(.spring(response: 0.5, dampingFraction: 0.75, blendDuration: 1), value: UUID())
