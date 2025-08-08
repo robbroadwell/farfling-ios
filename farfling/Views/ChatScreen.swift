@@ -52,9 +52,8 @@ struct ChatScreen: View {
         static let all: [Tab] = [
             Tab(id: 0, icon: "bubble.left.and.bubble.right", name: "Chat"),
             Tab(id: 1, icon: "doc.text.magnifyingglass", name: "Details"),
-            Tab(id: 2, icon: "person.3", name: "Members"),
-            Tab(id: 3, icon: "photo", name: "Photos"),
-            Tab(id: 4, icon: "gear", name: "Settings"),
+            Tab(id: 2, icon: "photo", name: "Photos"),
+            Tab(id: 3, icon: "gear", name: "Settings"),
         ]
     }
     @State private var selectedTab: Tab = Tab.all[0]
@@ -78,7 +77,7 @@ struct ChatScreen: View {
                                     Image(activity.imageName)
                                         .resizable()
                                         .scaledToFill()
-                                        .frame(width: screen.width / 5, height: screen.width / 5)
+                                        .frame(width: screen.width / 4, height: screen.width / 4)
                                         .clipped()
                                         .overlay(
                                             selectedActivity == activity
@@ -97,14 +96,14 @@ struct ChatScreen: View {
                                     .background(Color.black.opacity(0.4))
                                     .frame(maxHeight: .infinity)
                                 }
-                                .frame(width: screen.width / 5, height: screen.width / 5)
+                                .frame(width: screen.width / 4, height: screen.width / 4)
                             }
-                            .frame(height: screen.width / 5)
+                            .frame(height: screen.width / 4)
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
-                .frame(width: screen.width / 5)
+                .frame(width: screen.width / 4)
                 .background(Color.clear)
                 .contentShape(Rectangle())
                 Spacer()
@@ -122,7 +121,7 @@ struct ChatScreen: View {
                                 .frame(maxWidth: .infinity)
                         }
                     }
-                    .frame(height: 65 + insets.bottom)
+                    .frame(height: 70 + insets.bottom)
                     .background(Color.cyan)
                     .mask(
                         RoundedCorner(radius: 47.28, corners: [.bottomLeft, .bottomRight])
@@ -146,11 +145,14 @@ struct ChatScreen: View {
                     }
                     .frame(height: 65)
                     .padding(.bottom, insets.bottom)
+                    .padding(.top, 5)
                 }
+                .smallShadow()
             }
             .ignoresSafeArea()
         }
         .offset(x: yellowOffsetX)
+        .standardShadow()
     }
 }
 

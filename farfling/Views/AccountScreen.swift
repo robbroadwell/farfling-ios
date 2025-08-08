@@ -8,10 +8,9 @@ struct AccountScreen: View {
 
         static let all: [Tab] = [
             Tab(id: 0, icon: "person.crop.circle", name: "Profile"),
-            Tab(id: 1, icon: "star.circle", name: "Badges"),
-            Tab(id: 2, icon: "photo.on.rectangle", name: "Photos"),
-            Tab(id: 3, icon: "bell.circle", name: "Notifications"),
-            Tab(id: 4, icon: "gearshape", name: "Settings"),
+            Tab(id: 1, icon: "photo.on.rectangle", name: "Photos"),
+            Tab(id: 2, icon: "bell.circle", name: "Alerts"),
+            Tab(id: 3, icon: "gearshape", name: "Settings"),
         ]
     }
     @State private var selectedTab: Tab = Tab.all[0]
@@ -36,7 +35,7 @@ struct AccountScreen: View {
                                 .frame(maxWidth: .infinity)
                         }
                     }
-                    .frame(height: 65 + insets.bottom)
+                    .frame(height: 70 + insets.bottom)
                     .background(Color.cyan)
                     .mask(
                         RoundedCorner(radius: 47.28, corners: [.bottomLeft, .bottomRight])
@@ -60,11 +59,14 @@ struct AccountScreen: View {
                     }
                     .frame(height: 65)
                     .padding(.bottom, insets.bottom)
+                    .padding(.top, 5)
                 }
             }
             .ignoresSafeArea()
+            .smallShadow()
         }
         .offset(x: purpleOffsetX)
+        .standardShadow()
     }
 }
     

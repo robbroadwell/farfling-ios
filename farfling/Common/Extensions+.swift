@@ -50,3 +50,30 @@ struct StatefulPreviewWrapper3<Value, Content: View>: View {
         content($value1, $value2, $value3)
     }
 }
+
+struct StandardShadowModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+    }
+}
+
+extension View {
+    func standardShadow() -> some View {
+        self.modifier(StandardShadowModifier())
+    }
+}
+
+struct SmallShadowModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 0)
+    }
+}
+
+extension View {
+    func smallShadow() -> some View {
+        self.modifier(SmallShadowModifier())
+    }
+}
+
