@@ -147,6 +147,8 @@ struct ActivityListRow: View {
 struct ChatScreen: View {
     @Binding var redOffsetX: CGFloat
     @Binding var yellowOffsetX: CGFloat
+    @Binding var isMapVisible: Bool
+    @Binding var isYellowVisible: Bool
 
     struct Activity: Identifiable, Equatable {
         let id = UUID()
@@ -292,6 +294,16 @@ struct ChatScreen: View {
 
             // LEFT DRAWER: ActivityListColumn (slide-in)
             ZStack(alignment: .leading) {
+                if isActivityColumnOpen {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                                isActivityColumnOpen = false
+                            }
+                        }
+                }
                 HStack(spacing: 0) {
                     ActivityListColumn(
                         selectedActivity: $selectedActivity,
@@ -324,6 +336,8 @@ struct ChatScreen: View {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                             yellowOffsetX = -screen.width
                             redOffsetX = 0
+                            isMapVisible = true
+                            isYellowVisible = false
                         }
                     },
                     title: headerTitle,
@@ -341,9 +355,18 @@ struct ChatScreen: View {
 }
 
 #Preview {
-    StatefulPreviewWrapper(0.0) { redBinding in
-        StatefulPreviewWrapper(0.0) { yellowBinding in
-            ChatScreen(redOffsetX: redBinding, yellowOffsetX: yellowBinding)
+    StatefulPreviewWrapper(false) { isMapBinding in
+        StatefulPreviewWrapper(false) { isYellowVisibleBinding in
+            StatefulPreviewWrapper(0.0) { redBinding in
+                StatefulPreviewWrapper(0.0) { yellowBinding in
+                    ChatScreen(
+                        redOffsetX: redBinding,
+                        yellowOffsetX: yellowBinding,
+                        isMapVisible: isMapBinding,
+                        isYellowVisible: isYellowVisibleBinding
+                    )
+                }
+            }
         }
     }
 }
@@ -581,6 +604,9 @@ struct ChatHeader: View {
         .padding(.horizontal, 16)
         .frame(height: 56 + insets.top)
         .background(.ultraThinMaterial)
+        .mask(
+            RoundedCorner(radius: 47.28, corners: [.topLeft, .topRight])
+        )
         .smallShadow()
     }
 }

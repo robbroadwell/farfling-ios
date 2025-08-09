@@ -2,10 +2,8 @@ import SwiftUI
 
 struct AccountScreen: View {
     struct AccountHeader: View {
-//        let menuAction: () -> Void
         let leftAction: () -> Void
         let title: String
-//        let isMenuOpen: Bool
 
         var body: some View {
             ZStack {
@@ -24,17 +22,15 @@ struct AccountScreen: View {
                             .contentShape(Rectangle())
                     }
                     Spacer()
-//                    Button(action: rightAction) {
-//                        Image(systemName: "arrow.right")
-//                            .font(.system(size: 20, weight: .regular))
-//                            .frame(width: 36, height: 36)
-//                            .contentShape(Rectangle())
-//                    }
                 }
             }
+            .padding(.top, insets.top + 6)
             .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+            .frame(height: 56 + insets.top)
             .background(.ultraThinMaterial)
+            .mask(
+                RoundedCorner(radius: 47.28, corners: [.topLeft, .topRight])
+            )
             .smallShadow()
         }
     }
@@ -54,6 +50,8 @@ struct AccountScreen: View {
     @State private var selectedTab: Tab = Tab.all[0]
     @Binding var redOffsetX: CGFloat
     @Binding var purpleOffsetX: CGFloat
+    @Binding var isMapVisible: Bool
+    @Binding var isPurpleVisible: Bool
 
     var body: some View {
         ZStack {
@@ -68,12 +66,15 @@ struct AccountScreen: View {
                         withAnimation(.spring()) {
                             purpleOffsetX = screen.width
                             redOffsetX = 0
+                            isMapVisible = true
+                            isPurpleVisible = false
                         }
                     },
                     title: "Account"
                 )
                 Spacer()
             }
+            .ignoresSafeArea(edges: .top)
 
             // footer
             VStack {
@@ -122,9 +123,18 @@ struct AccountScreen: View {
 }
     
 #Preview {
-    StatefulPreviewWrapper(0.0) { redBinding in
-        StatefulPreviewWrapper(0.0) { purpleBinding in
-            AccountScreen(redOffsetX: redBinding, purpleOffsetX: purpleBinding)
+    StatefulPreviewWrapper(false) { isMapBinding in
+        StatefulPreviewWrapper(false) { isPurpleVisibleBinding in
+            StatefulPreviewWrapper(0.0) { redBinding in
+                StatefulPreviewWrapper(0.0) { purpleBinding in
+                    AccountScreen(
+                        redOffsetX: redBinding,
+                        purpleOffsetX: purpleBinding,
+                        isMapVisible: isMapBinding,
+                        isPurpleVisible: isPurpleVisibleBinding
+                    )
+                }
+            }
         }
     }
 }

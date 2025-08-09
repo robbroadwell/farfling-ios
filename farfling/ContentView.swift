@@ -21,12 +21,16 @@ struct ContentView: View {
             
             AccountScreen(
                 redOffsetX: $redOffsetX,
-                purpleOffsetX: $purpleOffsetX
+                purpleOffsetX: $purpleOffsetX,
+                isMapVisible: $isMapVisible,
+                isPurpleVisible: $isPurpleVisible
             )
             
             ChatScreen(
                 redOffsetX: $redOffsetX,
-                yellowOffsetX: $yellowOffsetX
+                yellowOffsetX: $yellowOffsetX,
+                isMapVisible: $isMapVisible,
+                isYellowVisible: $isYellowVisible
             )
 
             SwipeArea(
