@@ -295,13 +295,9 @@ struct ChatScreen: View {
                 chatThreads: chatThreads,
                 topContentInset: 56 + insets.top,
                 onOffsetChange: { value in
-            #if DEBUG
-                    let dbgDelta = value - lastScrollOffset
-                    print("[OFFSET] value=\(String(format: "%.2f", value)) delta=\(String(format: "%.2f", dbgDelta))")
-            #endif
                     let delta = value - lastScrollOffset
                     lastScrollOffset = value
-                    let threshold: CGFloat = 4
+                    let threshold: CGFloat = 6
                     if delta > threshold {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { isChromeHidden = true }
                     } else if delta < -threshold {
@@ -407,8 +403,7 @@ struct ChatThreadList: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 16) {
-                // A zero-height measuring header that *scrolls with the content*
+            VStack {
                 GeometryReader { geo in
                     Color.clear
                         .preference(
@@ -420,20 +415,22 @@ struct ChatThreadList: View {
                 .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
                     onOffsetChange?(value)
                 }
-
-                ForEach(chatThreads) { thread in
-                    VStack(alignment: .leading, spacing: 8) {
-                        MessageRow(message: thread.root)
-                        ForEach(thread.replies) { reply in
-                            MessageRow(message: reply, indentLevel: 1)
+                
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    ForEach(chatThreads) { thread in
+                        VStack(alignment: .leading, spacing: 8) {
+                            MessageRow(message: thread.root)
+                            ForEach(thread.replies) { reply in
+                                MessageRow(message: reply, indentLevel: 1)
+                            }
+                            if let typing = thread.typing {
+                                TypingIndicatorRow(user: typing.user, indentLevel: 1)
+                            }
+                            Divider()
+                                .opacity(0.15)
                         }
-                        if let typing = thread.typing {
-                            TypingIndicatorRow(user: typing.user, indentLevel: 1)
-                        }
-                        Divider()
-                            .opacity(0.15)
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.horizontal, 16)
                 }
             }
             .padding(.top, topContentInset + 20)
