@@ -1,4 +1,10 @@
 import SwiftUI
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
 
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
@@ -191,6 +197,8 @@ struct ChatScreen: View {
     @State private var selectedActivity: Activity? = nil
     @State private var isActivityColumnOpen: Bool = false
     @State private var headerTitle: String = "Chat"
+    @State private var isChromeHidden: Bool = false
+    @State private var lastScrollOffset: CGFloat = 0
 
     struct Tab: Identifiable, Equatable {
         let id: Int
@@ -283,15 +291,32 @@ struct ChatScreen: View {
 
     var body: some View {
         ZStack {
-            ChatThreadList(chatThreads: chatThreads, topContentInset: 56 + insets.top)
-                .allowsHitTesting(!isActivityColumnOpen)
-                .blur(radius: isActivityColumnOpen ? 10 : 0)
-                .animation(.spring(response: 0.35, dampingFraction: 0.85), value: isActivityColumnOpen)
-                .mask(
-                    RoundedRectangle(cornerRadius: 47.28, style: .continuous)
-                )
-                .ignoresSafeArea()
-
+            ChatThreadList(
+                chatThreads: chatThreads,
+                topContentInset: 56 + insets.top,
+                onOffsetChange: { value in
+            #if DEBUG
+                    let dbgDelta = value - lastScrollOffset
+                    print("[OFFSET] value=\(String(format: "%.2f", value)) delta=\(String(format: "%.2f", dbgDelta))")
+            #endif
+                    let delta = value - lastScrollOffset
+                    lastScrollOffset = value
+                    let threshold: CGFloat = 4
+                    if delta > threshold {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { isChromeHidden = true }
+                    } else if delta < -threshold {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { isChromeHidden = false }
+                    }
+                }
+            )
+            .allowsHitTesting(!isActivityColumnOpen)
+            .blur(radius: isActivityColumnOpen ? 10 : 0)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: isActivityColumnOpen)
+            .clipShape(
+                RoundedCorner(radius: 47.28, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+            )
+            .ignoresSafeArea()
+            
             // LEFT DRAWER: ActivityListColumn (slide-in)
             ZStack(alignment: .leading) {
                 if isActivityColumnOpen {
@@ -346,8 +371,12 @@ struct ChatScreen: View {
                 Spacer()
             }
             .ignoresSafeArea(edges: .top)
+            .offset(y: isChromeHidden ? -(100 + insets.top) : 0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isChromeHidden)
 
             ChatTabBar(selectedTab: $selectedTab)
+                .offset(y: isChromeHidden ? (110 + insets.bottom) : 0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isChromeHidden)
         }
         .offset(x: yellowOffsetX)
         .standardShadow()
@@ -374,10 +403,24 @@ struct ChatScreen: View {
 struct ChatThreadList: View {
     let chatThreads: [ChatScreen.ChatThread]
     var topContentInset: CGFloat = 0
+    var onOffsetChange: ((CGFloat) -> Void)? = nil
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 16) {
+                // A zero-height measuring header that *scrolls with the content*
+                GeometryReader { geo in
+                    Color.clear
+                        .preference(
+                            key: ScrollOffsetPreferenceKey.self,
+                            value: -geo.frame(in: .named("chatScroll")).minY
+                        )
+                }
+                .frame(height: 0)
+                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                    onOffsetChange?(value)
+                }
+
                 ForEach(chatThreads) { thread in
                     VStack(alignment: .leading, spacing: 8) {
                         MessageRow(message: thread.root)
@@ -396,6 +439,8 @@ struct ChatThreadList: View {
             .padding(.top, topContentInset + 20)
             .padding(.bottom, 120) // leave room for bottom UI
         }
+        .coordinateSpace(name: "chatScroll")
+        // No .onAppear block needed here; scroll offset is observed at parent.
         .background(Color(UIColor.systemBackground))
     }
 }
