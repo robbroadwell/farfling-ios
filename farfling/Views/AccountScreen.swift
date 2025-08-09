@@ -1,6 +1,44 @@
 import SwiftUI
 
 struct AccountScreen: View {
+    struct AccountHeader: View {
+//        let menuAction: () -> Void
+        let leftAction: () -> Void
+        let title: String
+//        let isMenuOpen: Bool
+
+        var body: some View {
+            ZStack {
+                // Center title
+                Text(title)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                // Leading/Trailing controls
+                HStack {
+                    Button(action: leftAction) {
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 20, weight: .regular))
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    Spacer()
+//                    Button(action: rightAction) {
+//                        Image(systemName: "arrow.right")
+//                            .font(.system(size: 20, weight: .regular))
+//                            .frame(width: 36, height: 36)
+//                            .contentShape(Rectangle())
+//                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
+            .background(.ultraThinMaterial)
+            .smallShadow()
+        }
+    }
+
     struct Tab: Identifiable, Equatable {
         let id: Int
         let icon: String
@@ -14,6 +52,7 @@ struct AccountScreen: View {
         ]
     }
     @State private var selectedTab: Tab = Tab.all[0]
+    @Binding var redOffsetX: CGFloat
     @Binding var purpleOffsetX: CGFloat
 
     var body: some View {
@@ -23,6 +62,18 @@ struct AccountScreen: View {
                     RoundedRectangle(cornerRadius: 47.28, style: .continuous)
                 )
                 .ignoresSafeArea()
+            VStack(spacing: 0) {
+                AccountHeader(
+                    leftAction: {
+                        withAnimation(.spring()) {
+                            purpleOffsetX = screen.width
+                            redOffsetX = 0
+                        }
+                    },
+                    title: "Account"
+                )
+                Spacer()
+            }
 
             // footer
             VStack {
@@ -71,7 +122,9 @@ struct AccountScreen: View {
 }
     
 #Preview {
-    StatefulPreviewWrapper(0.0) { binding in
-        AccountScreen(purpleOffsetX: binding)
+    StatefulPreviewWrapper(0.0) { redBinding in
+        StatefulPreviewWrapper(0.0) { purpleBinding in
+            AccountScreen(redOffsetX: redBinding, purpleOffsetX: purpleBinding)
+        }
     }
 }

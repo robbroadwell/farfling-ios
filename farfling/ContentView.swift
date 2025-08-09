@@ -20,10 +20,12 @@ struct ContentView: View {
             )
             
             AccountScreen(
+                redOffsetX: $redOffsetX,
                 purpleOffsetX: $purpleOffsetX
             )
             
             ChatScreen(
+                redOffsetX: $redOffsetX,
                 yellowOffsetX: $yellowOffsetX
             )
 

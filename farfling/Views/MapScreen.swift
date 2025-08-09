@@ -2,7 +2,6 @@ import SwiftUI
 import MapKit
 
 struct MapScreen: View {
-    let isMapEnabled: Bool = false
     
     @Binding var redOffsetX: CGFloat
     @Binding var yellowOffsetX: CGFloat
@@ -18,17 +17,11 @@ struct MapScreen: View {
     var body: some View {
         ZStack {
             ZStack {
-                if isMapEnabled {
-                    Map(coordinateRegion: .constant(MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-                        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                    )))
-                    .ignoresSafeArea()
-                    
-                } else {
-                    Color.red
-                        .ignoresSafeArea()
-                }
+                Map(coordinateRegion: .constant(MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                )))
+                .ignoresSafeArea()
                     
                 
                 VStack {
@@ -54,6 +47,7 @@ struct MapScreen: View {
         .offset(x: redOffsetX)
     }
 }
+
 
 #Preview {
     StatefulPreviewWrapper3(0.0, -screen.width, screen.width) { red, yellow, purple in
