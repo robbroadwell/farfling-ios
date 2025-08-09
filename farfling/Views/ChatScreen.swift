@@ -282,6 +282,12 @@ struct ChatScreen: View {
                     ],
                     typing: nil
                 )
+                ,
+                ChatThread(
+                    root: msg(alice, "Anyone want to start a fresh topic?", minutesAgo: 3),
+                    replies: [],
+                    typing: nil
+                )
             ]
         }()
     }
@@ -401,6 +407,12 @@ struct ChatThreadList: View {
     var topContentInset: CGFloat = 0
     var onOffsetChange: ((CGFloat) -> Void)? = nil
 
+    // Per-thread and global composer state
+    @State private var drafts: [UUID: String] = [:]
+    @FocusState private var focusedThreadID: UUID?
+    @State private var globalDraft: String = ""
+    @FocusState private var isGlobalFocused: Bool
+
     var body: some View {
         ScrollView {
             VStack {
@@ -426,8 +438,27 @@ struct ChatThreadList: View {
                             if let typing = thread.typing {
                                 TypingIndicatorRow(user: typing.user, indentLevel: 1)
                             }
-                            Divider()
-                                .opacity(0.15)
+
+                            // Per-thread inline composer (subtle, aligned with replies)
+                            AddCommentRow(
+                                placeholder: "Add a comment…",
+                                text: Binding(
+                                    get: { drafts[thread.id] ?? "" },
+                                    set: { drafts[thread.id] = $0 }
+                                ),
+                                isFocused: Binding(
+                                    get: { focusedThreadID == thread.id },
+                                    set: { $0 ? (focusedThreadID = thread.id) : (focusedThreadID = nil) }
+                                ),
+                                indentLevel: 1,
+                                subtle: true,
+                                onSubmit: {
+                                    // Handle sending the comment for this thread (stub)
+                                    drafts[thread.id] = ""
+                                    focusedThreadID = nil
+                                }
+                            )
+                            .focused($focusedThreadID, equals: thread.id)
                         }
                         .padding(.horizontal, 16)
                     }
@@ -435,10 +466,89 @@ struct ChatThreadList: View {
             }
             .padding(.top, topContentInset + 20)
             .padding(.bottom, 120) // leave room for bottom UI
+            // Global bottom composer
+            VStack(spacing: 8) {
+                Divider().opacity(0.15)
+                AddCommentRow(
+                    placeholder: "Say something…",
+                    text: $globalDraft,
+                    isFocused: Binding(
+                        get: { isGlobalFocused },
+                        set: { isGlobalFocused = $0 }
+                    ),
+                    onSubmit: {
+                        // Handle sending a new top-level message (stub)
+                        globalDraft = ""
+                        isGlobalFocused = false
+                    }
+                )
+                .focused($isGlobalFocused)
+                .padding(.horizontal, 16)
+            }
+            .padding(.bottom, 16)
         }
         .coordinateSpace(name: "chatScroll")
         // No .onAppear block needed here; scroll offset is observed at parent.
         .background(Color(UIColor.systemBackground))
+    }
+}
+
+struct AddCommentRow: View {
+    let placeholder: String
+    @Binding var text: String
+    @Binding var isFocused: Bool
+    var indentLevel: Int = 0
+    var subtle: Bool = false
+    var onSubmit: () -> Void
+
+    @FocusState private var localFocus: Bool
+
+    private let avatarWidth: CGFloat = 32
+    private let hSpacing: CGFloat = 12
+
+    var body: some View {
+        HStack(alignment: .top, spacing: hSpacing) {
+            if indentLevel > 0 {
+                Rectangle()
+                    .frame(width: 2)
+                    .frame(maxHeight: .infinity)
+                    .opacity(0.08)
+                    .padding(.leading, 8)
+            }
+
+            // Reserve space where an avatar would be so text aligns with replies
+            Rectangle()
+                .fill(Color.clear)
+                .frame(width: avatarWidth, height: 1)
+
+            ZStack(alignment: .leading) {
+                if text.isEmpty && !localFocus {
+                    Text(placeholder)
+                        .foregroundColor(.secondary)
+                        .opacity(subtle ? 0.7 : 1)
+                }
+                TextField("", text: $text)
+                    .focused($localFocus)
+                    .submitLabel(.send)
+                    .onSubmit(onSubmit)
+            }
+            .padding(.vertical, 4)
+        }
+//        .padding(.vertical, 6)
+//        .background { Color.red }
+        .padding(.leading, CGFloat(indentLevel) * 24)
+        .contentShape(Rectangle())
+        .onTapGesture { localFocus = true; isFocused = true }
+        .onChange(of: localFocus) { newValue in isFocused = newValue }
+        .overlay(alignment: .bottomLeading) {
+            // optional subtle underline when focused (no border)
+            if localFocus {
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.25))
+                    .frame(height: 1)
+                    .padding(.leading, CGFloat(indentLevel) * 24 + (indentLevel > 0 ? (8 + 2 + hSpacing + avatarWidth + hSpacing) : (avatarWidth + hSpacing)))
+            }
+        }
     }
 }
 
